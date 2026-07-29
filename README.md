@@ -1,1 +1,1 @@
-# 10th_toy_team1
+# 10th-toy-team1
