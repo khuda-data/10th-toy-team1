@@ -32,6 +32,8 @@
 | [`plan/details/02-한국어해설-작성지침.md`](plan/details/02-한국어해설-작성지침.md) | 논문 한국어 해설 제작 파이프라인 | 논문 해설을 만들 때 |
 | [`plan/details/03-논문인덱스.md`](plan/details/03-논문인덱스.md) | 읽은 논문 인덱스 (한 줄 요약 + 태그) | 어떤 논문을 읽었는지 찾을 때 |
 | [`plan/details/04-구현계획-20260729.md`](plan/details/04-구현계획-20260729.md) | 안전 경로 시스템 설계 초안 v0.1 (XGBoost 배치 + 회랑 A*) | 구현 착수 전 필독 |
+| [`plan/details/05-협업-통합절차.md`](plan/details/05-협업-통합절차.md) | 여러 명의 결과물을 합치는 4단계 (뼈대→약속→분담→작은 PR) | 협업 작업 시작 전 |
+| [`plan/details/06-인터페이스.md`](plan/details/06-인터페이스.md) | 모듈 사이 약속 장부 (API·데이터 형식) — 살아있는 계약서 | 공용 코드·데이터 만들기 전 |
 | [`design/DESIGN-apple.md`](design/DESIGN-apple.md) | **앱·PPT·대시보드 등 모든 시각 산출물의 디자인 토큰** | 눈에 보이는 것을 만들 때 (예외 없음) |
 | [`design/DESIGN-notion.md`](design/DESIGN-notion.md) | 논문 해설 HTML 전용 디자인 토큰 | 해설 문서를 만들 때만 |
 | [`논문/`](논문/) | 논문 1편 = 전용 폴더 1개 (원본 PDF + `[해설]` html/md + assets) | 선행연구를 읽을 때 |
