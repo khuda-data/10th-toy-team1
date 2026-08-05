@@ -1,6 +1,6 @@
 # 작업기록 — AI 세션 로그
 
-> 규칙: 루트 `AGENTS.md` §9. **세션 1개 = 파일 1개.** 경로: `작업기록/<영문이름>/YYYYMMDD-<주제>.md`
+> 규칙: 루트 `AGENTS.md` §9. **세션 1개 = 파일 1개.** 경로: `작업기록/<git아이디>/YYYYMMDD-<주제>.md` (폴더명 = 본인 GitHub 계정 이름)
 >
 > **직접 쓸 필요 없다 — AI가 자동으로 남기게 되어 있다** (AGENTS.md §9에 AI 지시로 명시).
 > 깜빡한 커밋은 pre-commit 훅이 막아준다 (활성화: `git config core.hooksPath scripts/githooks`, 온보딩.md 참조).
@@ -11,7 +11,7 @@
 # YYYY-MM-DD <주제 한 줄>
 
 - 도구/모델: (예: Claude Code / Opus, Gemini CLI / 2.5 Pro, Codex CLI / GPT-5)
-- 브랜치: (예: feat/hoyeol-risk-model, 문서 작업이면 main)
+- 브랜치: (예: feat/NaHoYeol-risk-model, 문서 작업이면 main)
 
 ## 지침 (내가 시킨 것)
 - 프롬프트 요지를 순서대로. 잘 먹힌 중요한 프롬프트는 원문 그대로 남긴다.
@@ -28,5 +28,5 @@
 
 ## 팁
 
-- 다음 세션을 시작할 때 AI에게 직전 로그 파일을 읽히면 이어서 작업된다: "작업기록/hoyeol/20260805-repo-setup.md 읽고 이어서 해줘"
-- 실제 작성 예시: [`hoyeol/20260805-repo-setup.md`](hoyeol/20260805-repo-setup.md)
+- 다음 세션을 시작할 때 AI에게 직전 로그 파일을 읽히면 이어서 작업된다: "작업기록/NaHoYeol/20260805-repo-setup.md 읽고 이어서 해줘"
+- 실제 작성 예시: [`NaHoYeol/20260805-repo-setup.md`](NaHoYeol/20260805-repo-setup.md)
