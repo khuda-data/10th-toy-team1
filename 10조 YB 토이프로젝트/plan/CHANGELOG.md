@@ -7,7 +7,7 @@
 ## 2026-07-29 — Phase 1: 프로젝트 개설 + 한국어 해설 1호
 
 ### 만든 것
-- `10조 YB 토이프로젝트/` 폴더 개설. 구조: `plan/`(README·CHANGELOG·details) + `논문/`(논문 1편당 전용 폴더) + `_fig_extract/`(그림 추출 스캐폴딩).
+- `1조 YB 토이프로젝트/` 폴더 개설. 구조: `plan/`(README·CHANGELOG·details) + `논문/`(논문 1편당 전용 폴더) + `_fig_extract/`(그림 추출 스캐폴딩).
 - `plan/README.md`, `plan/details/01-overview.md`, `02-한국어해설-작성지침.md`, `03-논문인덱스.md` 작성.
 - 논문 해설 1호: **Vidal-Domper et al. (2025), *Buildings* 15, 2590** — "Eyes on the Street" × 키토 노상강도.
   - `논문/EyesOnTheStreet_Quito_2025/` 생성, 원본 PDF를 `26-2 10기/` 루트에서 이 폴더로 이동.
