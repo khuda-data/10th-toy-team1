@@ -14,3 +14,8 @@ venv/
 .env
 *.key
 secrets.json
+
+# 문서는 md로 커밋한다 (2026-08-05 결정, AGENTS.md §4) — PDF는 로컬 생성/공유용
+*.pdf
+# 예외: 논문 원본 PDF는 출처 자료로 커밋 유지
+!**/논문/**/*.pdf
