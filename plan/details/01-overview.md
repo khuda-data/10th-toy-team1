@@ -12,7 +12,7 @@
 | F1 | 소속·형식 | KHUDA 26-2 10기 1조 YB 토이프로젝트 |
 | F2 | 작업 기록 방식 | `plan/` 폴더에 지침·결정·로그를 남긴다 (UXC 연구실 `알림 수신 모드/논문` 폴더 규율 이식) |
 | F3 | 한국어 해설 파이프라인 | `02-한국어해설-작성지침.md` 절차 고정 (논문 전용 폴더 → HTML → 그림 base64 임베드 → Edge headless PDF) |
-| F4 | 디자인 소스 | `26-2 10기/DESIGN-notion.md` 단일 소스 고정 (2026-07-29) |
+| F4 | 디자인 소스 | 해설: `design/DESIGN-notion.md` (2026-07-29) · 앱·PPT 등 시각 산출물: `design/DESIGN-apple.md` (2026-08-05) |
 | F5 | 읽은 논문 1호 | Vidal-Domper et al. (2025), *Buildings* 15, 2590 — 해설 완료 |
 
 ## 2. 미확정 — 정해야 할 것
