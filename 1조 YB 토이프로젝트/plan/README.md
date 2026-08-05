@@ -17,15 +17,16 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 
 ## 현재 상태 스냅샷
 
-**최종 동기화**: 2026-07-29 (Phase 1)
+**최종 동기화**: 2026-08-05 (Phase 2)
 
 | 항목 | 상태 |
 |---|---|
 | 프로젝트 주제 | **미확정** — 논문 리딩으로 후보 탐색 중 (`details/01-overview.md` §3) |
 | 팀 | KHUDA 26-2 10기 1조 (YB) |
-| 산출물 1호 | `논문/EyesOnTheStreet_Quito_2025/` — Buildings 2025 논문 한국어 해설 (HTML + PDF 24쪽) |
+| 산출물 1호 | `논문/EyesOnTheStreet_Quito_2025/` — Buildings 2025 논문 한국어 해설 (HTML + md + PDF 24쪽) |
 | 확정된 작업 규율 | 한국어 해설 파이프라인 (`details/02-한국어해설-작성지침.md`) |
-| 디자인 소스 | `../DESIGN-notion.md` (26-2 10기 폴더) — **단일 소스 고정** |
+| 디자인 소스 | 해설 문서: `../DESIGN-notion.md` · 앱·PPT 등 시각 산출물: `../DESIGN-apple.md` (2026-08-05) |
+| 팀 협업 | 레포 `khuda-data/10th-toy-team1` · AI 작업 원칙 = 루트 `AGENTS.md` (CLAUDE.md/GEMINI.md는 포인터) |
 
 ---
 
@@ -40,11 +41,14 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 │       ├── 01-overview.md         ← 프로젝트 개요, 확정/미확정 목록, 열린 질문
 │       ├── 02-한국어해설-작성지침.md  ← 논문 한국어 해설 제작 파이프라인 (고정 컨벤션)
 │       └── 03-논문인덱스.md        ← 읽은 논문 인덱스 (citation key → 한 줄 요약 + 태그)
-├── 논문/                          ← 논문 1편당 전용 폴더 (원본 PDF + 해설 HTML/PDF)
+├── 논문/                          ← 논문 1편당 전용 폴더 (원본 PDF + 해설 HTML/md)
 │   └── EyesOnTheStreet_Quito_2025/
-│       ├── buildings-15-02590.pdf
+│       ├── buildings-15-02590.pdf     (원본 — PDF 커밋 예외)
+│       ├── buildings-15-02590.md      (원본의 md 변환본)
 │       ├── [해설] buildings-15-02590.html
-│       └── [해설] buildings-15-02590.pdf
+│       ├── [해설] buildings-15-02590.md
+│       ├── [해설] buildings-15-02590.pdf  (Phase 1 커밋분 — 이후 해설 PDF는 커밋 안 함)
+│       └── assets/                    (md 변환 시 추출된 그림·표 이미지)
 └── _fig_extract/                  ← 그림·표 추출 스캐폴딩 (재생성 가능, 삭제해도 됨)
 ```
 
@@ -57,6 +61,8 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 3. **해설 디자인은 새로 만들지 않는다.** `26-2 10기/DESIGN-notion.md`의 토큰(색·타이포·간격·라운드·엘리베이션)만 사용한다. 1호 해설의 `<style>` 블록이 그 레퍼런스 구현이다 (`details/02-한국어해설-작성지침.md` §1-0 참조).
 4. **그림·표는 전부 이미지로 삽입**하고 base64 데이터 URI로 임베드한다 (외부 경로 참조 금지).
 5. 주제가 정해지지 않은 동안에는 **결정을 문서에 박제하지 않는다.** 후보와 근거만 기록하고, 확정 시 `01-overview.md`의 "확정" 표로 옮긴다.
+6. **PDF는 레포에 커밋하지 않는다** (2026-08-05). 모든 PDF 내용은 md 변환본(+`assets/` 이미지)으로 커밋한다. `.gitignore`가 `*.pdf`를 막으며, **논문 원본 PDF만 예외**. 변환 절차는 루트 `AGENTS.md` §4.
+7. **앱·PPT·대시보드 등 시각 산출물은 `../DESIGN-apple.md` 토큰을 따른다** (2026-08-05). 해설 HTML만 `../DESIGN-notion.md`(컨벤션 3). 라우팅 규칙은 루트 `AGENTS.md` §5.
 
 ---
 
@@ -72,3 +78,9 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
   - 세그먼트 50개 · insight 배지 46개 · 매핑 카드 7개. Figure 1·2, Table 1·2를 4배율 크롭 후 base64 임베드. PDF 24쪽.
   - 원문의 내부 불일치 9건(로짓/프로빗 수식, 지표 번호·개수, 단위 표기, 오기로 보이는 부정문 등)을 해설에 배지로 표기 — `03-논문인덱스.md`에 목록화.
 - 세부 로그·환경 이슈(Edge 헤더 제거 플래그 등)는 `CHANGELOG.md` 참조.
+
+### Phase 2 (2026-08-05) — 팀 협업 세팅
+- 팀 표기 정정: 문서 내 "10조" → "1조" + 폴더명 `git mv` (`10조 YB 토이프로젝트` → `1조 YB 토이프로젝트`).
+- **PDF → md 커밋 규칙 확정** (컨벤션 6). 기존 PDF 3종(구현계획·논문 원본·해설)을 pymupdf4llm으로 md 변환, `.gitignore`에 `*.pdf` 추가(논문 원본 예외).
+- **AI 작업 원칙 단일 소스 `AGENTS.md` 신설** + `CLAUDE.md`/`GEMINI.md` 포인터 — Claude Code·Gemini CLI·Codex CLI 어느 도구를 써도 같은 규칙이 로드된다.
+- **디자인 라우팅 확정** (컨벤션 7): 시각 산출물 전반 = `DESIGN-apple.md`, 해설 HTML = `DESIGN-notion.md`.

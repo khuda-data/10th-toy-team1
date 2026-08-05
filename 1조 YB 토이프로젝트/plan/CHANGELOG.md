@@ -4,6 +4,29 @@
 
 ---
 
+## 2026-08-05 — Phase 2: 팀 협업 세팅 (1조 정정 · PDF→md · AGENTS.md · 디자인 라우팅)
+
+### 만든 것
+- "10조" → "1조" 표기 수정(문서 5개) + 폴더명 `git mv` rename. 원격 반영 완료.
+- PDF 3종 md 변환 (pymupdf4llm, `write_images=True`): `구현 계획/20260729_수요일_구현계획.md`, `논문/.../buildings-15-02590.md`, `[해설] buildings-15-02590.md`. 그림·표는 각 폴더 `assets/`에 추출.
+- 루트에 `AGENTS.md`(팀 공용 AI 작업 원칙) + `CLAUDE.md`/`GEMINI.md`(@AGENTS.md 포인터) 신설. UXC 연구실에서 축적한 터미널 팁(cp949, 한글 경로, Edge headless 플래그, Start-Process 등)을 §7로 이식.
+- `DESIGN-apple.md`를 레포에 추가 (UXC 원본의 사본, 원본은 읽기 전용 유지).
+- `.gitignore`에 `*.pdf` + `!**/논문/**/*.pdf` 추가. `git check-ignore`로 차단/예외 동작 검증.
+
+### 정한 것
+- **PDF는 레포에 커밋하지 않는다. 모든 PDF 내용은 md 변환본으로 커밋** (사용자 결정). 기존 커밋된 PDF 3개는 유지, 논문 원본 PDF는 계속 커밋(출처 자료 예외).
+- **AI 작업 규칙의 단일 소스 = 루트 `AGENTS.md`.** CLAUDE.md/GEMINI.md에는 규칙을 적지 않는다.
+- **시각 산출물(앱·PPT·대시보드 등)의 디자인 소스 = `DESIGN-apple.md`** (사용자 결정). 해설 HTML만 `DESIGN-notion.md` 유지.
+
+### 알게 된 것 (환경/도구)
+- pymupdf4llm 변환 시 한글·공백·대괄호 파일명이 md 속 이미지 링크를 깨뜨림 → **ASCII 이름 임시 사본으로 변환**하고 md만 원래 이름으로 저장 (Edge headless의 ASCII 경로 트릭과 동일 패턴).
+
+### 다음
+- 팀원 온보딩: clone → 각자 AI 도구에서 AGENTS.md 로드 확인 ("작업 원칙 요약해봐").
+- 해설 PDF 재생성 시 푸터 "10조" 잔존 표기 정리 (로컬 생성용이므로 급하지 않음).
+
+---
+
 ## 2026-07-29 — Phase 1: 프로젝트 개설 + 한국어 해설 1호
 
 ### 만든 것
