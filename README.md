@@ -51,6 +51,6 @@
 ## 자주 쓰는 규칙 요약 (전문: AGENTS.md)
 
 - 작업 전 `git pull`, 커밋 전 `git diff` 직접 읽기, 세션 끝나면 작업기록 + push
-- 코드는 `feat/<영문이름>-<주제>` 브랜치 + PR(리뷰 1명), 문서 md는 main 직푸시 허용
+- 코드는 `feat/<영문이름>-<주제>` 브랜치 + PR(리뷰 1명), 문서 md는 main 직푸시 허용 — **브랜치 생성·PR 준비는 AI가 자동으로 해준다**
 - **PDF 커밋 금지** — 문서는 md로 변환해 커밋 (논문 원본 PDF만 예외, .gitignore가 강제)
 - 시각 산출물은 무조건 `design/DESIGN-apple.md`, 코드 경로는 ASCII, 비밀키는 절대 커밋 금지
