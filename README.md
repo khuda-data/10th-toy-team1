@@ -7,6 +7,8 @@
 
 ## 처음 온 팀원은 (3단계)
 
+설치부터 차근차근 필요하면 [`온보딩.md`](온보딩.md)를 보면 된다 (15분 코스). 요약:
+
 1. `git clone https://github.com/khuda-data/10th-toy-team1.git`
 2. 터미널 AI(Claude Code / Gemini CLI / Codex CLI) 실행 → **"이 레포의 작업 원칙을 요약해봐"** 라고 물어 [`AGENTS.md`](AGENTS.md)가 로드됐는지 확인
 3. 작업 → 끝나면 [`작업기록/`](작업기록/README.md)에 세션 로그를 남기고 push
@@ -21,7 +23,8 @@
 
 | 경로 | 무엇 | 언제 보나 |
 |---|---|---|
-| [`AGENTS.md`](AGENTS.md) | AI 작업 원칙 (단일 소스) — git 루틴·금지 목록·문서/디자인 규칙·Windows 팁 | 터미널 AI를 쓰는 모든 세션 |
+| [`온보딩.md`](온보딩.md) | 새 팀원 시작 안내 — 설치부터 첫 세션까지 15분 코스 | 처음 합류했을 때 |
+| [`AGENTS.md`](AGENTS.md) | AI 작업 원칙 (단일 소스) — git 루틴·금지 목록·문서/디자인 규칙·산출물 스타일·Windows 팁 | 터미널 AI를 쓰는 모든 세션 |
 | `CLAUDE.md` / `GEMINI.md` | AGENTS.md를 가리키는 포인터 | 직접 볼 일 없음 |
 | [`plan/README.md`](plan/README.md) | 프로젝트 메타 + 상태 스냅샷 + Phase 로그 | 프로젝트 현황이 궁금할 때 (여기부터) |
 | [`plan/CHANGELOG.md`](plan/CHANGELOG.md) | 날짜순 작업 로그 (만든 것·정한 것·막힌 것) | 언제 무엇이 결정됐는지 찾을 때 |
