@@ -26,7 +26,7 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 | 산출물 1호 | `논문/EyesOnTheStreet_Quito_2025/` — Buildings 2025 논문 한국어 해설 (HTML + md + PDF 24쪽) |
 | 확정된 작업 규율 | 한국어 해설 파이프라인 (`details/02-한국어해설-작성지침.md`) |
 | 디자인 소스 | 해설 문서: `../DESIGN-notion.md` · 앱·PPT 등 시각 산출물: `../DESIGN-apple.md` (2026-08-05) |
-| 팀 협업 | 레포 `khuda-data/10th-toy-team1` · AI 작업 원칙 = 루트 `AGENTS.md` (CLAUDE.md/GEMINI.md는 포인터) |
+| 팀 협업 | 레포 `khuda-data/10th-toy-team1` · AI 작업 원칙 = 루트 `AGENTS.md` (CLAUDE.md/GEMINI.md는 포인터) · AI 세션 로그 = `../작업기록/` |
 
 ---
 
@@ -84,3 +84,4 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 - **PDF → md 커밋 규칙 확정** (컨벤션 6). 기존 PDF 3종(구현계획·논문 원본·해설)을 pymupdf4llm으로 md 변환, `.gitignore`에 `*.pdf` 추가(논문 원본 예외).
 - **AI 작업 원칙 단일 소스 `AGENTS.md` 신설** + `CLAUDE.md`/`GEMINI.md` 포인터 — Claude Code·Gemini CLI·Codex CLI 어느 도구를 써도 같은 규칙이 로드된다.
 - **디자인 라우팅 확정** (컨벤션 7): 시각 산출물 전반 = `DESIGN-apple.md`, 해설 HTML = `DESIGN-notion.md`.
+- **코드 협업·세션 기록 규칙 확정** (AGENTS.md §8·§9): 코드는 브랜치+PR, 개인 실험은 `sandbox/`, AI 세션은 `작업기록/<영문이름>/`에 로그로 남겨 같은 커밋에 포함.

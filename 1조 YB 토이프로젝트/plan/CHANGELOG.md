@@ -12,11 +12,14 @@
 - 루트에 `AGENTS.md`(팀 공용 AI 작업 원칙) + `CLAUDE.md`/`GEMINI.md`(@AGENTS.md 포인터) 신설. UXC 연구실에서 축적한 터미널 팁(cp949, 한글 경로, Edge headless 플래그, Start-Process 등)을 §7로 이식.
 - `DESIGN-apple.md`를 레포에 추가 (UXC 원본의 사본, 원본은 읽기 전용 유지).
 - `.gitignore`에 `*.pdf` + `!**/논문/**/*.pdf` 추가. `git check-ignore`로 차단/예외 동작 검증.
+- AGENTS.md §8(코드 협업: GitHub Flow·폴더 소유권·sandbox)·§9(AI 세션 기록) 추가 + `작업기록/` 신설 (템플릿 README + 세션 1호 기록 `hoyeol/20260805-repo-setup.md`).
 
 ### 정한 것
 - **PDF는 레포에 커밋하지 않는다. 모든 PDF 내용은 md 변환본으로 커밋** (사용자 결정). 기존 커밋된 PDF 3개는 유지, 논문 원본 PDF는 계속 커밋(출처 자료 예외).
 - **AI 작업 규칙의 단일 소스 = 루트 `AGENTS.md`.** CLAUDE.md/GEMINI.md에는 규칙을 적지 않는다.
 - **시각 산출물(앱·PPT·대시보드 등)의 디자인 소스 = `DESIGN-apple.md`** (사용자 결정). 해설 HTML만 `DESIGN-notion.md` 유지.
+- **코드는 브랜치 + PR(리뷰 1명 이상), 문서 md는 main 직푸시.** 모듈 폴더마다 주인 1명, 개인 실험은 `sandbox/<영문이름>/`, 코드 경로는 ASCII.
+- **AI 세션은 `작업기록/<영문이름>/YYYYMMDD-<주제>.md`로 기록**해 같은 커밋/PR에 포함. plan = 결정된 것(현재형), 작업기록 = 일어난 일(시간순 이력)로 역할 분리 — "plan에 지시사항을 쌓는" 기존 습관을 대체 (폴더명은 사용자 확정).
 
 ### 알게 된 것 (환경/도구)
 - pymupdf4llm 변환 시 한글·공백·대괄호 파일명이 md 속 이미지 링크를 깨뜨림 → **ASCII 이름 임시 사본으로 변환**하고 md만 원래 이름으로 저장 (Edge headless의 ASCII 경로 트릭과 동일 패턴).
