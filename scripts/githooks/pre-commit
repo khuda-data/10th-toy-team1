@@ -1,0 +1,23 @@
+#!/bin/sh
+# 커밋에 작업기록(AI 세션 로그) 변경이 포함됐는지 확인하는 훅 — AGENTS.md §9
+# 활성화: git config core.hooksPath scripts/githooks  (온보딩.md 참조)
+
+# 의도적으로 건너뛸 때: SKIP_LOG=1 git commit ...
+[ -n "$SKIP_LOG" ] && exit 0
+
+if git -c core.quotepath=false diff --cached --name-only | grep -q "^작업기록/"; then
+  exit 0
+fi
+
+echo ""
+echo "─────────────────────────────────────────────────"
+echo " [작업기록 확인] 이 커밋에 작업기록/ 변경이 없습니다."
+echo ""
+echo " 세션 로그를 함께 커밋하는 것이 팀 규칙입니다 (AGENTS.md §9)."
+echo " AI에게 이렇게 말하면 됩니다:"
+echo "   \"오늘 세션 작업기록 남기고 다시 커밋해줘\""
+echo ""
+echo " 로그가 정말 필요 없는 커밋이면:"
+echo "   SKIP_LOG=1 git commit ..."
+echo "─────────────────────────────────────────────────"
+exit 1

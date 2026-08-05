@@ -1,7 +1,9 @@
 # 작업기록 — AI 세션 로그
 
 > 규칙: 루트 `AGENTS.md` §9. **세션 1개 = 파일 1개.** 경로: `작업기록/<영문이름>/YYYYMMDD-<주제>.md`
-> 세션을 끝낼 때 이 로그를 그 세션의 커밋/PR에 함께 포함한다.
+>
+> **직접 쓸 필요 없다 — AI가 자동으로 남기게 되어 있다** (AGENTS.md §9에 AI 지시로 명시).
+> 깜빡한 커밋은 pre-commit 훅이 막아준다 (활성화: `git config core.hooksPath scripts/githooks`, 온보딩.md 참조).
 
 ## 템플릿 (아래 블록을 복사해서 시작)
 

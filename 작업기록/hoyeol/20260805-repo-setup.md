@@ -13,6 +13,8 @@
 6. 팀원 코드 병합·작업 공간 관리 방법 + AI 지침·답변의 버전 관리 방법 세팅. (세션 로그 폴더명은 "작업기록"으로 확정)
 7. 지침·파일이 늘어날 때 못 찾는 문제 대비 + **레포 전체 구조 깔끔하게 정리** ("중구난방", plan 이원화 지적).
 8. 팀원 공유용 온보딩 안내문 + 모든 AI 생성물에 "자연스러운 말투·쉬운 용어·구체적 설명" 스타일 지시.
+9. 작업기록을 팀원이 아니라 **AI가 자동으로** 남기게 (의식적으로 못 지킬 것 대비).
+10. `code/`(통합 코드)와 `data/`(raw·result) 신설 + 개인 산출물은 각자 작업 공간으로 분리 (`sandbox/<영문이름>/`).
 
 ## AI가 한 일
 
@@ -21,7 +23,9 @@
 - `8b72a7b` PDF 3종 md 변환(pymupdf4llm, 그림은 `assets/`) + `.gitignore`에 `*.pdf`(논문 원본 예외) + 해설 지침 갱신
 - `c1aa341` `AGENTS.md`(AI 작업 원칙 단일 소스) + `CLAUDE.md`/`GEMINI.md` 포인터 + `DESIGN-apple.md` + plan Phase 2 로그
 - `ba70507` AGENTS.md §8 코드 협업(GitHub Flow·폴더 소유권·sandbox), §9 AI 세션 기록 + `작업기록/` 신설
-- (이번 커밋) **레포 평탄화**: `1조 YB 토이프로젝트/` 래퍼 제거(plan·논문→루트), `구현 계획/`→`plan/details/04-구현계획-20260729.md`, DESIGN 2종→`design/`, `_fig_extract`→`scripts/fig_extract/`, 커밋된 PDF 2개 추적 해제. 루트 README = 파일 지도, AGENTS.md 빠른 라우팅 표 + §10(지도 유지·지침 분산)
+- `70eb09f` **레포 평탄화**: `1조 YB 토이프로젝트/` 래퍼 제거(plan·논문→루트), `구현 계획/`→`plan/details/04-구현계획-20260729.md`, DESIGN 2종→`design/`, `_fig_extract`→`scripts/fig_extract/`, 커밋된 PDF 2개 추적 해제. 루트 README = 파일 지도, AGENTS.md 빠른 라우팅 표 + §10(지도 유지·지침 분산)
+- `e8e1414` `온보딩.md`(15분 코스) + AGENTS.md §11 AI 산출물 스타일(자연스러운 말투·쉬운 용어·구체성)
+- (이번 커밋) **작업기록 자동화**: §9 강화(AI가 자동 기록·커밋마다 스테이징) + `scripts/githooks/pre-commit` 훅(로그 없는 커밋 차단). `code/`·`data/raw·result`·`sandbox/<영문이름>/` 신설 — 개인 산출물은 sandbox, `data/result`는 통합 코드의 공용·최종 결과물만
 
 ## 검증 (내가 직접 확인한 것)
 
