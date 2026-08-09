@@ -1,0 +1,59 @@
+#!/bin/sh
+# 푸시 전 업데이트 요약 점검 — AGENTS.md §13
+# 남이 알아야 할 변경을 올리면서 업데이트.md 요약을 빠뜨리는 것을 막는다.
+# 활성화: git config core.hooksPath scripts/githooks  (온보딩.md 참조)
+# 의도적으로 건너뛸 때: SKIP_UPDATE=1 git push ...
+
+[ -n "$SKIP_UPDATE" ] && exit 0
+
+ZERO="0000000000000000000000000000000000000000"
+
+# git이 stdin으로 "<local_ref> <local_sha> <remote_ref> <remote_sha>" 를 준다
+while read -r LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+  [ "$LOCAL_SHA" = "$ZERO" ] && continue          # 브랜치 삭제
+
+  if [ "$REMOTE_SHA" = "$ZERO" ]; then            # 원격에 없는 새 브랜치
+    RANGE=$(git rev-list --max-count=20 "$LOCAL_SHA" --not --remotes 2>/dev/null)
+    [ -z "$RANGE" ] && continue
+    SPAN="--not --remotes $LOCAL_SHA"
+    CHANGED=$(git -c core.quotepath=false diff --name-only $(echo "$RANGE" | tail -1)^ "$LOCAL_SHA" 2>/dev/null)
+    COMMITS=$(git log --no-merges --pretty=%H --max-count=20 "$LOCAL_SHA" --not --remotes)
+  else
+    CHANGED=$(git -c core.quotepath=false diff --name-only "$REMOTE_SHA".."$LOCAL_SHA" 2>/dev/null)
+    COMMITS=$(git log --no-merges --pretty=%H "$REMOTE_SHA".."$LOCAL_SHA")
+  fi
+
+  [ -z "$COMMITS" ] && continue                   # 머지 커밋뿐이면 통과
+
+  # 업데이트.md가 이미 포함돼 있으면 통과
+  echo "$CHANGED" | grep -q "^업데이트.md$" && continue
+
+  # 기록용 파일만 바뀐 푸시는 남이 알 필요가 없으므로 통과
+  SUBSTANTIVE=$(echo "$CHANGED" | grep -v "^작업기록/" | grep -v "^검색기록/" | grep -v "^업데이트.md$")
+  [ -z "$SUBSTANTIVE" ] && continue
+
+  echo ""
+  echo "════════════════════════════════════════════════════"
+  echo " [업데이트 요약 없음] 푸시를 멈췄습니다"
+  echo "════════════════════════════════════════════════════"
+  echo ""
+  echo " 남이 알아야 할 변경을 올리는데 업데이트.md 요약이 없습니다."
+  echo " 요약이 없으면 팀원은 풀을 받아도 뭐가 바뀐 줄 모릅니다 (AGENTS.md §13)."
+  echo ""
+  echo " 바뀐 파일 (일부):"
+  echo "$SUBSTANTIVE" | head -6 | sed 's/^/   · /'
+  echo ""
+  echo " ▶ AI에게 이렇게 말하면 끝납니다:"
+  echo "     \"업데이트.md에 이번 작업 요약 추가하고 다시 푸시해줘\""
+  echo ""
+  echo " ▶ 직접 쓰려면 업데이트.md 맨 위에 3줄:"
+  echo "     무엇이 바뀌었나 / 팀원이 할 일 / 자세히(링크)"
+  echo ""
+  echo " ▶ 정말 알릴 필요 없는 변경이면:"
+  echo "     SKIP_UPDATE=1 git push ..."
+  echo "════════════════════════════════════════════════════"
+  echo ""
+  exit 1
+done
+
+exit 0

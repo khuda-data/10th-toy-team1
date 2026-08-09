@@ -11,8 +11,12 @@
 - **`scripts/githooks/post-merge`** — `git pull` 직후 `업데이트.md`에 **새로 추가된 항목만 터미널에 출력**. 요약이 없으면 커밋 목록을 대신 보여주고 요약을 요청
 - `AGENTS.md` **§13 신설** + AI 규칙(푸쉬 커밋에 항목 동봉, 사소한 변경은 제외, 10개 넘으면 CHANGELOG로 이관)
 
+### 자동 강제 추가
+- **`scripts/githooks/pre-push`** — 남이 알아야 할 변경을 올리는데 `업데이트.md` 요약이 없으면 **푸시 차단**. 머지 전용 푸시와 `작업기록/`·`검색기록/`만 바뀐 푸시는 자동 예외. `SKIP_UPDATE=1`로 우회 가능
+- 이로써 **자동 안전망 3겹 완성**: commit(작업기록 차단·작성 출처 경고) → push(업데이트 요약 차단) → pull(업데이트 자동 안내)
+
 ### 연동 반영 (§10)
-- `AGENTS.md` 빠른 라우팅 · 루트 `README.md`(파일 지도 + 서두 주제 갱신 + scripts 설명) · `온보딩.md`(§2 hooksPath 설명·§4 1번) · `.claude/commands/wrap.md`(4번 단계 추가)
+- `AGENTS.md` 빠른 라우팅·§13 · 루트 `README.md`(파일 지도 + 서두 주제 갱신 + scripts 설명) · `온보딩.md`(§2 hooksPath 설명·§4 1번·5번) · `.claude/commands/wrap.md`(4번 단계 추가)
 
 ---
 
