@@ -1,11 +1,45 @@
 #!/bin/sh
-# 커밋에 작업기록(AI 세션 로그) 변경이 포함됐는지 확인하는 훅 — AGENTS.md §9
+# 커밋 전 자동 점검 — AGENTS.md §9(작업기록) + ⭐-2(작성 출처)
 # 활성화: git config core.hooksPath scripts/githooks  (온보딩.md 참조)
-
 # 의도적으로 건너뛸 때: SKIP_LOG=1 git commit ...
+
 [ -n "$SKIP_LOG" ] && exit 0
 
-if git -c core.quotepath=false diff --cached --name-only | grep -q "^작업기록/"; then
+STAGED=$(git -c core.quotepath=false diff --cached --name-only)
+
+# ── 1) 작성 출처 블록 점검 (경고만, 커밋은 막지 않음) — AGENTS.md ⭐-2 ──────
+# 판단·해석이 들어가는 문서 폴더만 검사한다. README·인덱스류는 제외.
+MISSING=""
+for f in $(echo "$STAGED" | grep -E '^(plan/details/|회의기록/|검색기록/).*\.md$'); do
+  case "$f" in
+    */README.md) continue ;;
+    *안건.md) continue ;;
+  esac
+  [ -f "$f" ] || continue
+  if ! grep -q "작성 출처" "$f"; then
+    MISSING="$MISSING  - $f
+"
+  fi
+done
+
+if [ -n "$MISSING" ]; then
+  echo ""
+  echo "─────────────────────────────────────────────────"
+  echo " [작성 출처 확인] 아래 문서에 「🖊 작성 출처」 블록이 없습니다."
+  echo ""
+  printf '%s' "$MISSING"
+  echo " 어디까지 AI가 썼고 어디를 사람이 검토했는지 남기는 것이"
+  echo " 팀 대원칙입니다 (AGENTS.md 맨 위 ⭐-2)."
+  echo ""
+  echo " AI에게 이렇게 말하면 됩니다:"
+  echo "   \"이 문서에 작성 출처 블록 붙여줘\""
+  echo ""
+  echo " ※ 경고만 하고 커밋은 진행합니다."
+  echo "─────────────────────────────────────────────────"
+fi
+
+# ── 2) 작업기록 점검 (없으면 커밋 차단) — AGENTS.md §9 ────────────────────
+if echo "$STAGED" | grep -q "^작업기록/"; then
   exit 0
 fi
 
