@@ -1,0 +1,41 @@
+#!/bin/sh
+# git pull 직후 팀 업데이트를 알려주는 훅 — AGENTS.md §13
+# 활성화: git config core.hooksPath scripts/githooks  (온보딩.md 참조)
+
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
+FILE="$ROOT/업데이트.md"
+[ -f "$FILE" ] || exit 0
+
+# pull로 실제로 새 커밋이 들어왔는지 확인
+git rev-parse --verify -q ORIG_HEAD >/dev/null || exit 0
+NEW=$(git rev-list --count ORIG_HEAD..HEAD 2>/dev/null) || exit 0
+[ "$NEW" = "0" ] && exit 0
+
+# 업데이트.md에 추가된 줄만 뽑는다 ('+++ b/...' 헤더는 제외)
+ADDED=$(git -c core.quotepath=false diff ORIG_HEAD HEAD -- "업데이트.md" 2>/dev/null \
+        | sed -n 's/^+\([^+].*\)$/\1/p')
+
+echo ""
+echo "════════════════════════════════════════════════════"
+echo " 팀 업데이트 $NEW개 커밋을 받았습니다"
+echo "════════════════════════════════════════════════════"
+
+if [ -n "$ADDED" ]; then
+  echo ""
+  printf '%s\n' "$ADDED"
+  echo ""
+  echo "────────────────────────────────────────────────────"
+  echo " 전체 내용: 업데이트.md"
+else
+  # 요약이 안 올라온 경우 커밋 목록이라도 보여준다
+  echo ""
+  git log --no-merges --pretty=format:"  · %s  (%an)" ORIG_HEAD..HEAD | head -10
+  echo ""
+  echo ""
+  echo "────────────────────────────────────────────────────"
+  echo " 이번 업데이트에는 업데이트.md 요약이 없습니다."
+  echo " 올린 사람에게 한 줄 요약을 부탁하세요 (AGENTS.md §13)."
+fi
+echo "════════════════════════════════════════════════════"
+echo ""
+exit 0
