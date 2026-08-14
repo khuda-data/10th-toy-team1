@@ -148,6 +148,41 @@ def _normalize_variable(series: pd.Series, rule_name: str) -> tuple[pd.Series, p
     return numeric.mask(reasons.notna()), reasons
 
 
+def _categorical_from_reason(value: pd.Series, reason: pd.Series) -> pd.Series:
+    """범주형 원 Feature용: `NotApplicable` 사유는 문자열 그대로 남기고, `Missing`만 NaN으로 둔다.
+
+    NaN으로 둔 `Missing`은 이후 `build_preprocessor`가 Train 결측 상수 `Missing`으로 채운다.
+    `NotApplicable`은 원자료 분기로 이미 확정된 사실이라 학습 없이 그대로 별도 범주로 남겨야
+    프로토콜의 "Missing·NotApplicable은 통합하지 않는다"를 지킬 수 있다. `_normalize_variable`이
+    계산하는 사유를 버리지 않고 값에 다시 실어보내는 역할만 한다.
+    """
+    result = value.astype("string")
+    result.loc[reason.eq("NotApplicable")] = "NotApplicable"
+    return result
+
+
+def _normalize_categorical(series: pd.Series, rule_name: str) -> pd.Series:
+    """단일 원문항을 범주형 Feature로 표준화한다 (`_normalize_variable` + `_categorical_from_reason`)."""
+    return _categorical_from_reason(*_normalize_variable(series, rule_name))
+
+
+def _merge_categorical_sources(
+    left_value: pd.Series, left_reason: pd.Series, right_value: pd.Series, right_reason: pd.Series
+) -> pd.Series:
+    """두 원문항 중 실제 응답이 있는 쪽 값을 쓰는 범주형 Feature(예: 재학 중 대학유형과 졸업 대학유형).
+
+    응답거절·모름(Missing)을 설문 비해당(NotApplicable)보다 우선해 감사 가능하게 남긴다 —
+    `_combine_binary_or`와 같은 원칙.
+    """
+    value = left_value.combine_first(right_value)
+    reason = pd.Series(pd.NA, index=left_value.index, dtype="string")
+    both_unobserved = value.isna()
+    has_missing = left_reason.eq("Missing") | right_reason.eq("Missing")
+    reason.loc[both_unobserved & has_missing] = "Missing"
+    reason.loc[both_unobserved & ~has_missing] = "NotApplicable"
+    return _categorical_from_reason(value, reason)
+
+
 def _yes_no(values: pd.Series) -> pd.Series:
     """관측된 1/2형 문항만 1/0으로 변환하고, 미관측 값은 NA로 유지한다."""
     result = pd.Series(pd.NA, index=values.index, dtype="Int64")
@@ -219,23 +254,28 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
             frame["job_seeker"], job_seeker_reason, previous_search, previous_search_reason
         )
 
+        # age는 수치형이라 값만 쓰고(실제 결측은 이후 Train median으로), 나머지는 범주형이라
+        # NotApplicable 사유를 문자열로 보존한다(Missing·NotApplicable을 통합하지 않기 위함).
+        frame["age"], _ = _normalize_variable(source[f"{prefix}age"], "age")
         for output, input_column, rule_name in [
-            ("gender", "gender", "gender"), ("age", f"{prefix}age", "age"),
+            ("gender", "gender", "gender"),
             ("region_5", f"{prefix}region_a", "region_5"),
             ("education_level", f"{prefix}edu", "education_level"),
             ("student_status", f"{prefix}student", "student_status"),
             ("student_type", f"{prefix}student_type", "student_type"),
         ]:
-            frame[output], _ = _normalize_variable(source[input_column], rule_name)
-        current, _ = _normalize_variable(
+            frame[output] = _normalize_categorical(source[input_column], rule_name)
+        current_value, current_reason = _normalize_variable(
             source.get(f"{prefix}univ_type_current", pd.Series(pd.NA, index=source.index)),
             "university_type_current",
         )
-        graduate, _ = _normalize_variable(
+        graduate_value, graduate_reason = _normalize_variable(
             source.get(f"{prefix}univ_type_graduate", pd.Series(pd.NA, index=source.index)),
             "university_type_graduate",
         )
-        frame["university_type"] = current.combine_first(graduate)
+        frame["university_type"] = _merge_categorical_sources(
+            current_value, current_reason, graduate_value, graduate_reason
+        )
 
         # --- 자격증: e301(취득여부)·e302(개수)·e307_1(1번째 자격증 전공관련도)는 1차 문항 자체가 없음(코드북 확인).
         cert_flag, _ = _normalize_variable(
@@ -293,8 +333,8 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         frame["ever_worked_before"] = _yes_no(worked_flag)
         frame["past_job_count"] = _conditional_zero(worked_flag, job_count_raw)
 
-        # --- 전공계열: a413, 1~4차 전체(코드북 확인).
-        frame["major_group"], _ = _normalize_variable(source[f"{question}a413"], "major_group")
+        # --- 전공계열: a413, 1~4차 전체(코드북 확인). 범주형이라 NotApplicable 사유를 문자열로 보존.
+        frame["major_group"] = _normalize_categorical(source[f"{question}a413"], "major_group")
 
         # --- 졸업 후 경과 개월: 조사시점(date_y/date_m) - 최종학력 취득시점(eduy/edum).
         # eduy/edum은 기존에 이미 로딩만 되고 안 쓰이던 컬럼(원래 코드에 있었음).

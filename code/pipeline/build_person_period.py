@@ -7,6 +7,9 @@ from collections.abc import Mapping
 import pandas as pd
 
 BASELINE_YEARS = (2021, 2022, 2023)
+# job_seeker(c602)·recent_employment_prep(c635)는 더 이상 적격 판정 필터로 쓰지 않는다 — 2026-08-15
+# "YP2021 Global/Local 데이터셋 전처리 업무안내" 지침에 따라 미취업자(ECOACT∈{2,3}) 전체를 분석 대상으로
+# 포함하고, 구직·취업준비 여부는 feature(recent_job_search/recent_employment_prep)로만 쓴다.
 REQUIRED_BASELINE_COLUMNS = {"SAMPID", "responded", "ecoact", "job_seeker", "recent_employment_prep"}
 REQUIRED_TARGET_COLUMNS = {"SAMPID", "responded", "ecoact"}
 
@@ -20,7 +23,7 @@ def _validate_wave(frame: pd.DataFrame, year: int, required: set[str]) -> None:
 
 
 def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.DataFrame:
-    """세 전환의 미취업·취업준비자 행을 하나의 Person-Period DataFrame으로 만든다.
+    """세 전환의 미취업자(실업·비경제활동) 전체 행을 하나의 Person-Period DataFrame으로 만든다.
 
     입력 annual_data의 각 행은 해당 조사연도에 실제 응답한 패널 한 명의 표준화된 값이다.
     이 함수는 기준연도 이후 컬럼을 합치지 않으므로 Feature 누수를 만들지 않는다.
@@ -45,7 +48,6 @@ def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.D
             merged["responded"].eq(1).fillna(False)
             & merged["target_responded"].eq(1).fillna(False)
             & merged["ecoact"].isin([2, 3]).fillna(False)
-            & (merged["job_seeker"].eq(1).fillna(False) | merged["recent_employment_prep"].eq(1).fillna(False))
         )
         period = merged.loc[eligible].copy()
         period.insert(1, "baseline_year", baseline_year)
