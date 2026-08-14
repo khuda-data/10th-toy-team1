@@ -1,0 +1,66 @@
+{
+  "version": "1.2",
+  "description": "YP2021 원자료 특수결측 처리. 코드북에 확인된 변수별 코드만 선언한다.",
+  "rules": {
+    "responded": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "ecoact": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "job_seeker": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "recent_job_search_source": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "recent_employment_prep_source": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "gender": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "age": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "region_5": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "education_level": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "student_status": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "student_type": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "university_type_current": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "university_type_graduate": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "hope_job_keco": {
+      "source_codes": {
+        "9999997": "Missing",
+        "9999998": "Missing",
+        "9999999": "Missing"
+      },
+      "blank_reason": "NotApplicable"
+    }
+  }
+}

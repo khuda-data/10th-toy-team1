@@ -1,15 +1,57 @@
-# code — 실질적인 코딩 결과물
+# code — YP2021 공통 분석 코드
 
-**무엇**: 앱·모델·분석 등 **돌아가는 코드 전부.** 팀이 합의한 "전체를 하나로 모은" 통합본이다.
+**무엇**: 원자료를 Person-Period 데이터셋으로 만들고, Global/Local 모델을 같은 조건에서 실행하는 팀 공용 코드다.
 
-**왜 만들었나**: 개인 실험(sandbox)과 팀 공동 결과물이 섞이면 "지금 뭐가 진짜인지" 아무도 모르게 된다. 여기 있는 것 = 검증돼서 합쳐진 진짜, 라는 약속을 위한 폴더다. 그래서 여기는 PR로만 들어올 수 있다.
+**왜**: 각자가 Notebook을 마지막에 합치는 대신, 처음부터 같은 입력·분할·전처리·결과 형식을 사용해 PR만으로 연결하기 위해 만든다.
 
-**협업 작업의 첫 순서는 코딩이 아니라 ① 뼈대 ② 약속이다** — `plan/details/05-협업-통합절차.md`를 먼저 볼 것. 모듈 사이 약속은 `plan/details/06-인터페이스.md`에 기록돼 있다.
+먼저 [`AGENTS.md`](AGENTS.md)와 [`../plan/details/06-인터페이스.md`](../plan/details/06-인터페이스.md)를 읽는다.
 
-## 규칙 (전문: 루트 AGENTS.md §8)
+## 구조
 
-- 모듈 폴더로 나누고 **폴더마다 주인 1명** (예: `code/preprocess/`, `code/model/`, `code/routing/`, `code/web/` — 실제 분담은 팀 회의로 확정).
-- 남의 폴더는 PR로만 수정. 코드 작업은 `feat/<git아이디>-<주제>` 브랜치에서.
-- **폴더·파일 이름은 전부 영문(ASCII)** — 한글 경로에서 도구가 깨진다.
-- 연습·실험 코드는 여기 말고 `sandbox/<git아이디>/`에 (검증된 것만 여기로 승격).
-- 이 폴더만의 코딩 컨벤션이 생기면 `code/AGENTS.md`를 만들어 적는다 (루트 AGENTS.md §10).
+| 폴더/파일 | 역할 | 담당자가 채울 부분 |
+|---|---|---|
+| `pipeline/` | 원자료 읽기, Person-Period, Global/Local, SAMPID split, 실행점 | YP 원문항을 표준 Feature로 바꾸는 source adapter 보완 |
+| `preprocess/` | Feature 계약 검증, Train-only 결측·희소범주·인코딩 | 이력형 Feature 누적·특수결측·분기 처리 |
+| `model/` | 다섯 공통 모델의 학습·CV 튜닝 | XGBoost fold별 `scale_pos_weight` 처리, 실행 최적화 |
+| `evaluation/` | F1 등 공통 지표와 Permutation Importance | SAMPID bootstrap 95% CI와 Global-vs-Local Δ 지표 |
+| `config/` | Feature·KECO·모델 설정 단일 원본 | 팀 합의가 있는 경우에만 갱신 |
+| `requirements.txt` | 첫 실행 시 설치할 패키지 | 팀의 실제 실행 환경 확인 후 버전 freeze |
+
+## 실행 흐름
+
+원자료 zip은 Git에 넣지 않는다. 제공받은 `YP2021_EXCEL_*.zip` 경로를 그대로 전달한다.
+
+```bash
+python -m code.pipeline.run_pipeline \
+  --raw-zip "/경로/YP2021_EXCEL_0227.zip"
+```
+
+이 명령은 다음 구조 산출물만 만든다.
+
+```text
+원자료 → person_period.parquet → global/local_dataset.parquet → split_ids.csv
+```
+
+현재 source adapter는 코드북으로 확인된 **표본 선정·Target·희망직업 이력**을 구현한다. 전공 대계열·자격증/훈련/일경험 누적과 설문 특수결측 처리가 완성되기 전에는 모델 실행을 의도적으로 막는다. 없는 Feature를 0으로 채워 성능을 내는 것은 금지다.
+
+모든 Feature mapping을 마친 뒤에만 아래처럼 모델을 실행한다.
+
+```bash
+python -m code.pipeline.run_pipeline \
+  --raw-zip "/경로/YP2021_EXCEL_0227.zip" \
+  --run-modeling --model logistic_regression
+```
+
+`--tune`은 Train 내부 `StratifiedGroupKFold`만 이용해 공통 탐색 범위를 실행한다. 계산량 때문에 Randomized Search가 필요하면 팀 공통 결정을 먼저 반영한다.
+
+---
+## 🖊 작성 출처
+
+> `AGENTS.md` 대원칙에 따른 기록. 분석 기준은 사용자가 제공한 프로토콜에서 가져왔으며, 구현 상태 설명은 AI가 작성했다.
+
+| 구간 | 내용을 정한 주체 | 사람 검토 |
+|---|---|---|
+| 구조·실행 안내 | AI가 공통 코드 뼈대를 설명 | ⬜ 미검토 |
+| Person-Period·분할·전처리·평가 기준 | **사용자 제공 YP2021 공통 전처리·모델링 프로토콜 v1.2** | ⬜ 팀 확인 필요 |
+
+- 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`
