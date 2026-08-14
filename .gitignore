@@ -25,3 +25,7 @@ secrets.json
 !**/논문/**/*.pdf
 # 단, 논문 폴더 안이라도 우리가 생성한 해설 PDF는 커밋하지 않는다
 **/논문/**/\[해설\]*.pdf
+
+# Public repository safety — 개인 단위 원자료에서 파생된 분석 Dataset·SAMPID split은 로컬에만 둔다.
+data/result/datasets/*.parquet
+data/result/splits/split_ids.csv
