@@ -8,14 +8,15 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pandas as pd
 
-SPECIAL_MISSING_MIN = 9_000_000
 WAVE_TO_YEAR = {1: 2021, 2: 2022, 3: 2023, 4: 2024}
+MISSING_RULES_PATH = Path(__file__).resolve().parents[1] / "config" / "yp2021_missing_rules.json"
 
 
 def _safe_read_excel(path: Path, usecols: list[str] | None, *, nrows: int | None = None) -> pd.DataFrame:
@@ -82,9 +83,64 @@ def load_yp2021_raw(raw_zip: str | Path) -> dict[int, pd.DataFrame]:
     return frames
 
 
-def _clean_special_missing(series: pd.Series) -> pd.Series:
+def _load_missing_rules() -> dict[str, dict[str, object]]:
+    """코드북 대조를 마친 변수별 특수결측 규칙을 읽는다.
+
+    숫자가 크다는 이유만으로 결측으로 바꾸지 않는다. 새 원변수를 추가할 때는 먼저
+    `code/config/yp2021_missing_rules.json`에 그 변수의 코드북 기준을 추가해야 한다.
+    """
+    with MISSING_RULES_PATH.open(encoding="utf-8") as handle:
+        config = json.load(handle)
+    return config["rules"]
+
+
+MISSING_RULES = _load_missing_rules()
+
+
+def _normalize_variable(series: pd.Series, rule_name: str) -> tuple[pd.Series, pd.Series]:
+    """원코드를 값과 결측 사유(`Missing`/`NotApplicable`)로 나눠 표준화한다."""
+    try:
+        rule = MISSING_RULES[rule_name]
+    except KeyError as error:
+        raise KeyError(f"특수결측 규칙이 없는 변수입니다: {rule_name}") from error
+
     numeric = pd.to_numeric(series, errors="coerce")
-    return numeric.mask(numeric >= SPECIAL_MISSING_MIN)
+    code_reasons = {int(code): reason for code, reason in rule["source_codes"].items()}
+    reasons = pd.Series(pd.NA, index=series.index, dtype="string")
+    for code, reason in code_reasons.items():
+        reasons.loc[numeric.eq(code)] = reason
+    reasons.loc[numeric.isna()] = rule["blank_reason"]
+    return numeric.mask(reasons.notna()), reasons
+
+
+def _yes_no(values: pd.Series) -> pd.Series:
+    """관측된 1/2형 문항만 1/0으로 변환하고, 미관측 값은 NA로 유지한다."""
+    result = pd.Series(pd.NA, index=values.index, dtype="Int64")
+    observed = values.notna()
+    result.loc[observed] = values.loc[observed].eq(1).astype("Int64")
+    return result
+
+
+def _combine_binary_or(
+    left_values: pd.Series,
+    left_reasons: pd.Series,
+    right_values: pd.Series,
+    right_reasons: pd.Series,
+) -> tuple[pd.Series, pd.Series]:
+    """두 문항의 '있음=1'을 합치되, 둘 다 미관측일 때 0을 만들지 않는다."""
+    observed = left_values.notna() | right_values.notna()
+    value = pd.Series(pd.NA, index=left_values.index, dtype="Int64")
+    value.loc[observed] = (
+        left_values.loc[observed].eq(1) | right_values.loc[observed].eq(1)
+    ).astype("Int64")
+
+    reason = pd.Series(pd.NA, index=left_values.index, dtype="string")
+    unobserved = ~observed
+    # 응답거절·모름(Missing)을 설문 비해당(NotApplicable)보다 우선해 감사 가능하게 남긴다.
+    has_missing = left_reasons.eq("Missing") | right_reasons.eq("Missing")
+    reason.loc[unobserved & has_missing] = "Missing"
+    reason.loc[unobserved & ~has_missing] = "NotApplicable"
+    return value, reason
 
 
 def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[int, pd.DataFrame]:
@@ -99,21 +155,37 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         wave = year - 2020
         prefix, question = f"w{wave:02d}", f"y{wave:02d}"
         frame = pd.DataFrame({"SAMPID": source["sampid"].astype("string")})
-        frame["responded"] = _clean_special_missing(source[prefix]).eq(1).astype("int8")
-        frame["ecoact"] = _clean_special_missing(source[f"{prefix}ecoact"])
-        frame["job_seeker"] = _clean_special_missing(source[f"{question}c602"])
-        frame["recent_employment_prep"] = _clean_special_missing(source[f"{question}c635"]).eq(1).astype("Int64")
-        frame["recent_job_search"] = (
-            frame["job_seeker"].eq(1) | _clean_special_missing(source[f"{question}c628"]).eq(1)
-        ).astype("Int64")
-        for output, input_column in {
-            "gender": "gender", "age": f"{prefix}age", "region_5": f"{prefix}region_a",
-            "education_level": f"{prefix}edu", "student_status": f"{prefix}student",
-            "student_type": f"{prefix}student_type",
-        }.items():
-            frame[output] = _clean_special_missing(source[input_column])
-        current = _clean_special_missing(source.get(f"{prefix}univ_type_current", pd.Series(pd.NA, index=source.index)))
-        graduate = _clean_special_missing(source.get(f"{prefix}univ_type_graduate", pd.Series(pd.NA, index=source.index)))
+        responded, _ = _normalize_variable(source[prefix], "responded")
+        frame["responded"] = _yes_no(responded)
+        frame["ecoact"], _ = _normalize_variable(source[f"{prefix}ecoact"], "ecoact")
+        frame["job_seeker"], job_seeker_reason = _normalize_variable(source[f"{question}c602"], "job_seeker")
+        prep, prep_reason = _normalize_variable(source[f"{question}c635"], "recent_employment_prep_source")
+        frame["recent_employment_prep"] = _yes_no(prep)
+        frame["recent_employment_prep_reason"] = prep_reason
+
+        previous_search, previous_search_reason = _normalize_variable(
+            source[f"{question}c628"], "recent_job_search_source"
+        )
+        frame["recent_job_search"], frame["recent_job_search_reason"] = _combine_binary_or(
+            frame["job_seeker"], job_seeker_reason, previous_search, previous_search_reason
+        )
+
+        for output, input_column, rule_name in [
+            ("gender", "gender", "gender"), ("age", f"{prefix}age", "age"),
+            ("region_5", f"{prefix}region_a", "region_5"),
+            ("education_level", f"{prefix}edu", "education_level"),
+            ("student_status", f"{prefix}student", "student_status"),
+            ("student_type", f"{prefix}student_type", "student_type"),
+        ]:
+            frame[output], _ = _normalize_variable(source[input_column], rule_name)
+        current, _ = _normalize_variable(
+            source.get(f"{prefix}univ_type_current", pd.Series(pd.NA, index=source.index)),
+            "university_type_current",
+        )
+        graduate, _ = _normalize_variable(
+            source.get(f"{prefix}univ_type_graduate", pd.Series(pd.NA, index=source.index)),
+            "university_type_graduate",
+        )
         frame["university_type"] = current.combine_first(graduate)
         annual[year] = frame
     return annual
@@ -131,7 +203,7 @@ def extract_hope_job_history(raw_frames: Mapping[int, pd.DataFrame]) -> pd.DataF
         ]:
             if column not in source:
                 continue
-            values = _clean_special_missing(source[column])
+            values, _ = _normalize_variable(source[column], "hope_job_keco")
             rows = pd.DataFrame(
                 {
                     "SAMPID": source["sampid"].astype("string"),
