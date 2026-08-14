@@ -49,6 +49,8 @@ def _source_columns(wave: int) -> list[str]:
         f"{question}c773z",
         # [취준] 업무/직무 관련 자격증을 스펙으로 준비했는지 — 1~4차 전체에서 물어봄(취준 응답자 대상).
         f"{question}c720",
+        # [공통] 전공계열 — 1~4차 전체(코드북 확인).
+        f"{question}a413",
     ]
     if wave >= 2:
         columns.extend([
@@ -61,10 +63,28 @@ def _source_columns(wave: int) -> list[str]:
             f"{question}e101", f"{question}e102", f"{question}e108_1",
             # 경험일자리(일 경험) 유무·횟수 — 2~4차용 문항.
             f"{question}d001", f"{question}d002",
+            # 재학중 일경험 유형[1] — 게이팅(여부) 문항은 코드북에서 못 찾음. 값이 있으면 '있음'만 판정.
+            f"{question}a186_1",
+            # 취업노력 1~3순위(다중응답) — 2~4차는 순위형, prep_effort_01~12로 멀티핫 전개.
+            f"{question}c701a", f"{question}c701b", f"{question}c701c",
+            # 시험준비: 경험여부·개수·[1]번째의 현재 지속 여부. 1차엔 없음.
+            f"{question}e001", f"{question}e002", f"{question}e008_1",
+            # 경험일자리[1]의 시작·종료 시점 — past_work_months 계산용(첫 일자리만, 코드북 근거·한계는 세션 로그 참조).
+            f"{question}d003a_1", f"{question}d003b_1",
+            f"{question}d036a_1", f"{question}d036b_1", f"{question}d074_1", f"{question}d075_1",
         ])
     if wave == 1:
         # 경험일자리 유무·횟수의 1차 전용 문항(회고조사). 2~4차의 d001/d002와 짝을 이룸.
         columns.extend([f"{question}d501", f"{question}d502"])
+        # 1차는 취업노력을 순위형(c701a~c) 대신 문항 12개의 개별 예/아니오로 물어봄 — 코드·순서가 c701의 값 1~12와 동일(코드북 확인).
+        columns.extend([f"{question}c70{i}" for i in range(2, 14)])
+        # 재학중 일경험 유형[1]의 1차 전용 문항(회고조사). a186_1과 짝을 이룸.
+        columns.append(f"{question}a616_1")
+        # 경험일자리[1]의 시작·종료 시점 — 1차 전용(회고조사) 문항. d003/d036/d074와 짝을 이룸.
+        columns.extend([
+            f"{question}d503a_1", f"{question}d503b_1",
+            f"{question}d532a_1", f"{question}d532b_1", f"{question}d577a_1", f"{question}d577b_1",
+        ])
     return columns
 
 
@@ -272,6 +292,125 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         )
         frame["ever_worked_before"] = _yes_no(worked_flag)
         frame["past_job_count"] = _conditional_zero(worked_flag, job_count_raw)
+
+        # --- 전공계열: a413, 1~4차 전체(코드북 확인).
+        frame["major_group"], _ = _normalize_variable(source[f"{question}a413"], "major_group")
+
+        # --- 졸업 후 경과 개월: 조사시점(date_y/date_m) - 최종학력 취득시점(eduy/edum).
+        # eduy/edum은 기존에 이미 로딩만 되고 안 쓰이던 컬럼(원래 코드에 있었음).
+        grad_year, _ = _normalize_variable(source[f"{prefix}eduy"], "graduation_year")
+        grad_month, _ = _normalize_variable(source[f"{prefix}edum"], "graduation_month")
+        survey_year, _ = _normalize_variable(source[f"date{wave:02d}_y"], "survey_year")
+        survey_month, _ = _normalize_variable(source[f"date{wave:02d}_m"], "survey_month")
+        has_all = grad_year.notna() & grad_month.notna() & survey_year.notna() & survey_month.notna()
+        months = pd.Series(pd.NA, index=source.index, dtype="Float64")
+        months.loc[has_all] = (
+            (survey_year.loc[has_all] - grad_year.loc[has_all]) * 12
+            + (survey_month.loc[has_all] - grad_month.loc[has_all])
+        )
+        frame["months_since_graduation"] = months
+
+        # --- 졸업 전후 취업준비·구직활동 경험 — a193/a194, 2~4차만(1차엔 없음, 이미 로딩된 컬럼).
+        grad_prep, _ = _normalize_variable(
+            source.get(f"{question}a193", pd.Series(pd.NA, index=source.index)), "graduation_prep_flag"
+        )
+        grad_job_search, _ = _normalize_variable(
+            source.get(f"{question}a194", pd.Series(pd.NA, index=source.index)), "graduation_job_search_flag"
+        )
+        frame["graduation_prep_experience"] = _yes_no(grad_prep)
+        frame["graduation_job_search_experience"] = _yes_no(grad_job_search)
+
+        # --- 취업노력 유형 12개 멀티핫(prep_effort_01~12) + 기타(prep_effort_other).
+        # 2~4차: c701a/b/c(1~3순위, 값 1~12/97) 중 어디든 그 코드가 있으면 1. 셋 다 결측이면 문항 자체를 안 받은 것.
+        # 1차: 순위형 문항이 없고 c702~c713 12개를 각각 예/아니오로 물어봄 — 값 순서가 c701의 코드 1~12와 동일(코드북 확인).
+        if wave == 1:
+            for i in range(1, 13):
+                flag, _ = _normalize_variable(
+                    source.get(f"{question}c70{i + 1}", pd.Series(pd.NA, index=source.index)),
+                    "job_search_effort_flag",
+                )
+                frame[f"prep_effort_{i:02d}"] = _yes_no(flag)
+            frame["prep_effort_other"] = pd.Series(pd.NA, index=source.index, dtype="Int64")  # 1차엔 '기타' 항목 없음
+        else:
+            ranks = [
+                _normalize_variable(
+                    source.get(f"{question}c701{letter}", pd.Series(pd.NA, index=source.index)),
+                    "job_search_effort_rank",
+                )[0]
+                for letter in ("a", "b", "c")
+            ]
+            observed = ranks[0].notna() | ranks[1].notna() | ranks[2].notna()
+            for i in range(1, 13):
+                col = pd.Series(pd.NA, index=source.index, dtype="Int64")
+                col.loc[observed] = 0
+                for rank in ranks:
+                    col.loc[rank.eq(i)] = 1
+                frame[f"prep_effort_{i:02d}"] = col
+            other = pd.Series(pd.NA, index=source.index, dtype="Int64")
+            other.loc[observed] = 0
+            for rank in ranks:
+                other.loc[rank.eq(97)] = 1
+            frame["prep_effort_other"] = other
+
+        # --- 시험준비: e001(경험여부)·e002(개수)·e008_1([1]번째 현재 지속 여부). 1차엔 문항 없음(코드북 확인).
+        exam_flag, _ = _normalize_variable(
+            source.get(f"{question}e001", pd.Series(pd.NA, index=source.index)), "exam_prep_flag"
+        )
+        exam_count_raw, _ = _normalize_variable(
+            source.get(f"{question}e002", pd.Series(pd.NA, index=source.index)), "exam_prep_count"
+        )
+        exam_current_raw, _ = _normalize_variable(
+            source.get(f"{question}e008_1", pd.Series(pd.NA, index=source.index)), "exam_prep_current_flag"
+        )
+        frame["exam_prep_experience"] = _yes_no(exam_flag)
+        frame["exam_prep_count"] = _conditional_zero(exam_flag, exam_count_raw)
+        frame["currently_preparing_exam"] = _conditional_zero(exam_flag, _yes_no(exam_current_raw).astype("Float64"))
+
+        # --- 재학중 일경험 유형[1] 〔AI 제안 · 사람 검토 필요〕: 상위 '여부' 게이팅 문항을 코드북에서 못 찾아
+        # 값이 있으면 1(있음)만 판정하고, 없으면 NA로 둔다(0으로 단정하지 않음 — '경험없음'과 '문항 비해당'을 못 가름).
+        school_work_col = f"{question}a616_1" if wave == 1 else f"{question}a186_1"
+        school_work_type, _ = _normalize_variable(
+            source.get(school_work_col, pd.Series(pd.NA, index=source.index)), "school_work_experience_type"
+        )
+        frame["school_work_experience"] = school_work_type.notna().astype("Int64").mask(school_work_type.isna())
+
+        # --- 과거 근무 개월(첫 번째 경험일자리만) 〔AI 제안 · 사람 검토 필요〕: 여러 일자리 중 [1]번째만 계산.
+        # 여러 일자리 총 근무기간 합산은 겹치는 기간 처리 등 별도 설계가 필요해 이번엔 [1]번째만 씀.
+        if wave == 1:
+            start_y_col, start_m_col = f"{question}d503a_1", f"{question}d503b_1"
+            end_paid_y_col, end_paid_m_col = f"{question}d532a_1", f"{question}d532b_1"
+            end_unpaid_y_col, end_unpaid_m_col = f"{question}d577a_1", f"{question}d577b_1"
+        else:
+            start_y_col, start_m_col = f"{question}d003a_1", f"{question}d003b_1"
+            end_paid_y_col, end_paid_m_col = f"{question}d036a_1", f"{question}d036b_1"
+            end_unpaid_y_col, end_unpaid_m_col = f"{question}d074_1", f"{question}d075_1"
+        job1_start_y, _ = _normalize_variable(
+            source.get(start_y_col, pd.Series(pd.NA, index=source.index)), "job_history_year"
+        )
+        job1_start_m, _ = _normalize_variable(
+            source.get(start_m_col, pd.Series(pd.NA, index=source.index)), "job_history_month"
+        )
+        job1_end_paid_y, _ = _normalize_variable(
+            source.get(end_paid_y_col, pd.Series(pd.NA, index=source.index)), "job_history_year"
+        )
+        job1_end_paid_m, _ = _normalize_variable(
+            source.get(end_paid_m_col, pd.Series(pd.NA, index=source.index)), "job_history_month"
+        )
+        job1_end_unpaid_y, _ = _normalize_variable(
+            source.get(end_unpaid_y_col, pd.Series(pd.NA, index=source.index)), "job_history_year"
+        )
+        job1_end_unpaid_m, _ = _normalize_variable(
+            source.get(end_unpaid_m_col, pd.Series(pd.NA, index=source.index)), "job_history_month"
+        )
+        job1_end_y = job1_end_paid_y.combine_first(job1_end_unpaid_y)
+        job1_end_m = job1_end_paid_m.combine_first(job1_end_unpaid_m)
+        job1_has_all = job1_start_y.notna() & job1_start_m.notna() & job1_end_y.notna() & job1_end_m.notna()
+        job1_months = pd.Series(pd.NA, index=source.index, dtype="Float64")
+        job1_months.loc[job1_has_all] = (
+            (job1_end_y.loc[job1_has_all] - job1_start_y.loc[job1_has_all]) * 12
+            + (job1_end_m.loc[job1_has_all] - job1_start_m.loc[job1_has_all])
+        )
+        frame["past_work_months"] = job1_months
 
         annual[year] = frame
     return annual
