@@ -47,9 +47,24 @@ def _source_columns(wave: int) -> list[str]:
         f"{prefix}univ_type_graduate", f"{prefix}eduy", f"{prefix}edum", f"date{wave:02d}_y",
         f"date{wave:02d}_m", f"{question}c602", f"{question}c628", f"{question}c635",
         f"{question}c773z",
+        # [취준] 업무/직무 관련 자격증을 스펙으로 준비했는지 — 1~4차 전체에서 물어봄(취준 응답자 대상).
+        f"{question}c720",
     ]
     if wave >= 2:
-        columns.extend([f"{question}a193", f"{question}a194", f"{question}a244z"])
+        columns.extend([
+            f"{question}a193", f"{question}a194", f"{question}a244z",
+            # [졸|취준] 업무/직무 관련 자격증 스펙 — c720의 졸업자 버전. 1차엔 없음.
+            f"{question}a207",
+            # 자격증: 취득 여부·개수·[1]번째 자격증의 전공 관련도. 1차엔 문항 자체가 없음(코드북 확인).
+            f"{question}e301", f"{question}e302", f"{question}e307_1",
+            # 직업교육훈련: 경험 여부·횟수·[1]번째 훈련 총 시간. 1차엔 없음.
+            f"{question}e101", f"{question}e102", f"{question}e108_1",
+            # 경험일자리(일 경험) 유무·횟수 — 2~4차용 문항.
+            f"{question}d001", f"{question}d002",
+        ])
+    if wave == 1:
+        # 경험일자리 유무·횟수의 1차 전용 문항(회고조사). 2~4차의 d001/d002와 짝을 이룸.
+        columns.extend([f"{question}d501", f"{question}d502"])
     return columns
 
 
@@ -143,6 +158,20 @@ def _combine_binary_or(
     return value, reason
 
 
+def _conditional_zero(gate: pd.Series, value: pd.Series) -> pd.Series:
+    """상위 '여부' 문항(1=있다/2=없다) 기준으로 하위 개수·시간 문항을 채운다.
+
+    gate=2(없다)면 하위 문항 자체를 안 물어봐 원자료가 비어 있지만, 이 경우는
+    '몰라서 결측'이 아니라 '없으니 논리적으로 0'이라 명시적으로 0을 채운다.
+    gate=1(있다)이면 실제 응답값을, gate 자체가 결측이면 NA를 그대로 둔다.
+    """
+    result = pd.Series(pd.NA, index=gate.index, dtype="Float64")
+    result.loc[gate.eq(2)] = 0
+    has_value = gate.eq(1)
+    result.loc[has_value] = value.loc[has_value]
+    return result
+
+
 def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[int, pd.DataFrame]:
     """원자료의 확인된 공통 문항을 Person-Period 입력 이름으로 표준화한다.
 
@@ -187,6 +216,63 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
             "university_type_graduate",
         )
         frame["university_type"] = current.combine_first(graduate)
+
+        # --- 자격증: e301(취득여부)·e302(개수)·e307_1(1번째 자격증 전공관련도)는 1차 문항 자체가 없음(코드북 확인).
+        cert_flag, _ = _normalize_variable(
+            source.get(f"{question}e301", pd.Series(pd.NA, index=source.index)), "certificate_flag"
+        )
+        cert_count_raw, _ = _normalize_variable(
+            source.get(f"{question}e302", pd.Series(pd.NA, index=source.index)), "certificate_count"
+        )
+        frame["has_certificate"] = _yes_no(cert_flag)
+        frame["certificate_count"] = _conditional_zero(cert_flag, cert_count_raw)
+
+        # 전공 관련도(1~4점, 3점 이상 '어느 정도 관련 있다'부터를 관련 있음으로 봄 — AI 제안 · 사람 검토 필요).
+        major_related_raw, _ = _normalize_variable(
+            source.get(f"{question}e307_1", pd.Series(pd.NA, index=source.index)), "certificate_major_related"
+        )
+        has_major_related = pd.Series(pd.NA, index=cert_flag.index, dtype="Int64")
+        has_major_related.loc[cert_flag.eq(2)] = 0
+        rated = cert_flag.eq(1) & major_related_raw.notna()
+        has_major_related.loc[rated] = (major_related_raw.loc[rated] >= 3).astype("Int64")
+        frame["has_major_related_certificate"] = has_major_related
+
+        # [취준] 업무/직무 자격증을 스펙으로 준비했는지 — c720은 1~4차 전부, a207은 졸업자 버전(2차부터).
+        # 1차는 c720만으로 채워지므로(a207 없음) 자격증 계열 중 유일하게 1차도 값이 생긴다.
+        emp_cert_c, emp_cert_c_reason = _normalize_variable(source[f"{question}c720"], "employment_cert_spec")
+        emp_cert_a, emp_cert_a_reason = _normalize_variable(
+            source.get(f"{question}a207", pd.Series(pd.NA, index=source.index)), "employment_cert_spec"
+        )
+        frame["has_employment_certificate"], _ = _combine_binary_or(
+            emp_cert_c, emp_cert_c_reason, emp_cert_a, emp_cert_a_reason
+        )
+
+        # --- 직업교육훈련: e101(경험여부)·e102(횟수)·e108_1(1번째 훈련 총 시간). 1차 문항 없음(코드북 확인).
+        training_flag, _ = _normalize_variable(
+            source.get(f"{question}e101", pd.Series(pd.NA, index=source.index)), "vocational_training_flag"
+        )
+        training_count_raw, _ = _normalize_variable(
+            source.get(f"{question}e102", pd.Series(pd.NA, index=source.index)), "vocational_training_count"
+        )
+        training_hours_raw, _ = _normalize_variable(
+            source.get(f"{question}e108_1", pd.Series(pd.NA, index=source.index)), "vocational_training_hours"
+        )
+        frame["has_vocational_training"] = _yes_no(training_flag)
+        frame["vocational_training_count"] = _conditional_zero(training_flag, training_count_raw)
+        frame["vocational_training_hours"] = _conditional_zero(training_flag, training_hours_raw)
+
+        # --- 경험일자리(일 경험): 2~4차는 d001/d002, 1차는 회고조사 문항인 d501/d502를 쓴다(짝 문항, 코드북 확인).
+        worked_col = f"{question}d501" if wave == 1 else f"{question}d001"
+        count_col = f"{question}d502" if wave == 1 else f"{question}d002"
+        worked_flag, _ = _normalize_variable(
+            source.get(worked_col, pd.Series(pd.NA, index=source.index)), "ever_worked_flag"
+        )
+        job_count_raw, _ = _normalize_variable(
+            source.get(count_col, pd.Series(pd.NA, index=source.index)), "job_count"
+        )
+        frame["ever_worked_before"] = _yes_no(worked_flag)
+        frame["past_job_count"] = _conditional_zero(worked_flag, job_count_raw)
+
         annual[year] = frame
     return annual
 
