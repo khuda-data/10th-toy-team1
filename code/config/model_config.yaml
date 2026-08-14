@@ -1,0 +1,66 @@
+version: "1.2"
+random_seed: 42
+split:
+  test_fraction: 0.2
+  outer_n_splits: 5
+  outer_test_fold: 0
+  cv_n_splits: 5
+  shuffle: true
+  random_state: 42
+tuning:
+  default_method: grid
+  randomized_n_iter: 30
+  scoring: f1
+  threshold: 0.5
+evaluation:
+  primary_metric: f1
+  secondary_metrics: [accuracy, precision, recall, roc_auc]
+  permutation_scoring: f1
+  permutation_repeats: 20
+  bootstrap_repeats: 1000
+
+models:
+  logistic_regression:
+    fixed: {max_iter: 2000, solver: liblinear, random_state: 42}
+    search:
+      penalty: [l1, l2]
+      C: [0.01, 0.1, 1, 10]
+      class_weight: [null, balanced]
+  decision_tree:
+    fixed: {random_state: 42}
+    search:
+      criterion: [gini, entropy]
+      max_depth: [3, 5, 8, 12, null]
+      min_samples_split: [2, 10, 30]
+      min_samples_leaf: [1, 5, 10, 20]
+      class_weight: [null, balanced]
+  random_forest:
+    fixed: {n_jobs: -1, random_state: 42}
+    search:
+      n_estimators: [200, 500]
+      max_depth: [5, 10, 20, null]
+      min_samples_split: [2, 10, 30]
+      min_samples_leaf: [1, 5, 10]
+      max_features: [sqrt, 0.5]
+      class_weight: [null, balanced_subsample]
+  xgboost:
+    fixed: {objective: binary:logistic, eval_metric: logloss, n_jobs: -1, random_state: 42}
+    search:
+      n_estimators: [200, 500]
+      learning_rate: [0.03, 0.1]
+      max_depth: [3, 5, 7]
+      min_child_weight: [1, 5]
+      subsample: [0.8, 1.0]
+      colsample_bytree: [0.8, 1.0]
+      scale_pos_weight: [1, train_negative_positive_ratio]
+  lightgbm:
+    fixed: {objective: binary, n_jobs: -1, random_state: 42, verbosity: -1}
+    search:
+      n_estimators: [200, 500]
+      learning_rate: [0.03, 0.1]
+      num_leaves: [15, 31, 63]
+      max_depth: [-1, 5, 10]
+      min_child_samples: [10, 20, 50]
+      subsample: [0.8, 1.0]
+      colsample_bytree: [0.8, 1.0]
+      class_weight: [null, balanced]

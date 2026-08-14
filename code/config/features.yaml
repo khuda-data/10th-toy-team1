@@ -1,0 +1,70 @@
+# YP2021 Global/Local 공통 Feature 계약
+# 원자료의 차수별 문항명·특수결측 코드는 코드북 대조 후 source adapter에서 이 이름으로 표준화한다.
+version: "1.2"
+target: employment_transition
+id_column: SAMPID
+group_column: SAMPID
+metadata_columns:
+  - SAMPID
+  - baseline_year
+  - target_year
+  - hope_job_keco
+  - hope_job_year
+  - hope_job_source
+  - job_group
+
+features:
+  - {name: gender, type: categorical, group: demographics}
+  - {name: age, type: numeric, group: demographics}
+  - {name: region_5, type: categorical, group: demographics}
+  - {name: baseline_year, type: categorical, group: demographics}
+  - {name: education_level, type: categorical, group: education}
+  - {name: student_status, type: categorical, group: education}
+  - {name: student_type, type: categorical, group: education}
+  - {name: university_type, type: categorical, group: education}
+  - {name: major_group, type: categorical, group: education}
+  - {name: months_since_graduation, type: numeric, group: education}
+  - {name: nonemployment_type, type: categorical, group: job_search}
+  - {name: recent_job_search, type: numeric, group: job_search}
+  - {name: recent_employment_prep, type: numeric, group: job_search}
+  # y**c701a~c의 선택지를 Multi-Hot으로 전개한다. 순위(a/b/c) 자체는 입력하지 않는다.
+  - {name: prep_effort_01, type: numeric, group: job_search}
+  - {name: prep_effort_02, type: numeric, group: job_search}
+  - {name: prep_effort_03, type: numeric, group: job_search}
+  - {name: prep_effort_04, type: numeric, group: job_search}
+  - {name: prep_effort_05, type: numeric, group: job_search}
+  - {name: prep_effort_06, type: numeric, group: job_search}
+  - {name: prep_effort_07, type: numeric, group: job_search}
+  - {name: prep_effort_08, type: numeric, group: job_search}
+  - {name: prep_effort_09, type: numeric, group: job_search}
+  - {name: prep_effort_10, type: numeric, group: job_search}
+  - {name: prep_effort_11, type: numeric, group: job_search}
+  - {name: prep_effort_12, type: numeric, group: job_search}
+  - {name: prep_effort_other, type: numeric, group: job_search}
+  - {name: graduation_prep_experience, type: numeric, group: job_search}
+  - {name: graduation_job_search_experience, type: numeric, group: job_search}
+  - {name: has_certificate, type: numeric, group: certificate}
+  - {name: certificate_count, type: numeric, group: certificate}
+  - {name: has_employment_certificate, type: numeric, group: certificate}
+  - {name: has_major_related_certificate, type: numeric, group: certificate}
+  - {name: has_vocational_training, type: numeric, group: training}
+  - {name: vocational_training_count, type: numeric, group: training}
+  - {name: vocational_training_hours, type: numeric, group: training}
+  - {name: exam_prep_experience, type: numeric, group: exam}
+  - {name: exam_prep_count, type: numeric, group: exam}
+  - {name: currently_preparing_exam, type: numeric, group: exam}
+  - {name: school_work_experience, type: numeric, group: work_history}
+  - {name: ever_worked_before, type: numeric, group: work_history}
+  - {name: past_job_count, type: numeric, group: work_history}
+  - {name: past_work_months, type: numeric, group: work_history}
+
+# 공통 전처리 기준. 개별 실험에서 값을 바꾸지 않는다.
+preprocessing:
+  numeric_imputer: median
+  categorical_missing_label: Missing
+  not_applicable_label: NotApplicable
+  categorical_encoder: one_hot
+  rare_category_min_frequency: 10
+  rare_category_label: Other
+  protected_categories: [Missing, NotApplicable]
+  scaler_models: [logistic_regression]
