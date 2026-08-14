@@ -1,6 +1,6 @@
 # YP2021 Global/Local 공통 Feature 계약
 # 원자료의 차수별 문항명·특수결측 코드는 코드북 대조 후 source adapter에서 이 이름으로 표준화한다.
-version: "1.2"
+version: "1.3"
 target: employment_transition
 id_column: SAMPID
 group_column: SAMPID
