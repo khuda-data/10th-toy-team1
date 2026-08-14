@@ -23,7 +23,7 @@
 ### 리뷰 반영
 
 - `source_adapter`의 특수결측 처리를 변수별 코드북 설정으로 분리했다. 최근 취업준비·구직활동 파생값은 원문항이 모두 미관측이면 0으로 바꾸지 않고 NA와 `Missing`/`NotApplicable` 사유를 남긴다.
-- 팀장 검토가 끝난 공통 개발 규칙, KECO 매핑, Feature·전처리 기준, 모델·평가·분할 설정, Person-Period·Global/Local·결과 파일 인터페이스, 분석 대상·Target·분할·Global/Local 비교 기준만 문서의 `✅ 검토 완료`로 표시했다. 아직 구현이 남은 원변수 매핑·이력형 Feature·XGBoost fold 가중치·bootstrap CI는 미검토 상태로 유지했다.
+- 검토가 끝난 공통 개발 규칙, KECO 매핑, Feature·전처리 기준, 모델·평가·분할 설정, Person-Period·Global/Local·결과 파일 인터페이스, 분석 대상·Target·분할·Global/Local 비교 기준만 문서의 `✅ 검토 완료`로 표시했다. 아직 구현이 남은 원변수 매핑·이력형 Feature·XGBoost fold 가중치·bootstrap CI는 미검토 상태로 유지했다.
 
 ---
 
