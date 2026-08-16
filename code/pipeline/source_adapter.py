@@ -1,8 +1,8 @@
 """제공된 YP2021 Excel 원자료를 공통 파이프라인의 표준 입력으로 바꾼다.
 
-이 모듈은 분석 기준을 정하지 않는다. 프로토콜에 명시된 Person-Period 포함 조건과
-희망직업 이력만 안전하게 읽어 전달하며, 나머지 Feature 누적 로직은 preprocess 모듈의
-담당자가 코드북 대조 후 보완한다.
+이 모듈은 분석 기준을 정하지 않는다. Person-Period 생성을 위한 기준연도·다음연도
+경제활동상태와 희망직업 이력만 안전하게 읽어 전달하며, 나머지 Feature 누적 로직은
+preprocess 모듈의 담당자가 코드북 대조 후 보완한다.
 """
 
 from __future__ import annotations

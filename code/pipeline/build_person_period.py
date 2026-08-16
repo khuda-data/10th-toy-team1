@@ -1,4 +1,4 @@
-"""프로토콜 v1.2의 Person-Period 분석 행 생성."""
+"""프로토콜 v1.3의 기준연도 미취업자 Person-Period 분석 행 생성."""
 
 from __future__ import annotations
 
@@ -26,7 +26,9 @@ def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.D
     """세 전환의 미취업자(실업·비경제활동) 전체 행을 하나의 Person-Period DataFrame으로 만든다.
 
     입력 annual_data의 각 행은 해당 조사연도에 실제 응답한 패널 한 명의 표준화된 값이다.
-    이 함수는 기준연도 이후 컬럼을 합치지 않으므로 Feature 누수를 만들지 않는다.
+    `job_seeker`, `recent_employment_prep` 등 취업준비 관련 값은 적격 조건이 아니라
+    기준연도 Feature로 남긴다. 이 함수는 기준연도 이후 Feature를 합치지 않으므로
+    Feature 누수를 만들지 않는다.
     """
     expected = set(range(2021, 2025))
     missing_years = sorted(expected - set(annual_data))
@@ -48,6 +50,8 @@ def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.D
             merged["responded"].eq(1).fillna(False)
             & merged["target_responded"].eq(1).fillna(False)
             & merged["ecoact"].isin([2, 3]).fillna(False)
+            # Target을 0으로 자동 대체하지 않는다. 다음연도 ECOACT가 1/2/3일 때만 행을 만든다.
+            & merged["target_ecoact"].isin([1, 2, 3]).fillna(False)
         )
         period = merged.loc[eligible].copy()
         period.insert(1, "baseline_year", baseline_year)

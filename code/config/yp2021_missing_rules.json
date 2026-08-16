@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "description": "YP2021 원자료 특수결측 처리. 코드북에 확인된 변수별 코드만 선언한다.",
   "rules": {
     "responded": {
