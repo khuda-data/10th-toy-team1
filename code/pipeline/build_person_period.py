@@ -13,6 +13,37 @@ BASELINE_YEARS = (2021, 2022, 2023)
 REQUIRED_BASELINE_COLUMNS = {"SAMPID", "responded", "ecoact", "job_seeker", "recent_employment_prep"}
 REQUIRED_TARGET_COLUMNS = {"SAMPID", "responded", "ecoact"}
 
+# 13번 설계안(plan/details/13-YP2021-PersonPeriod-전처리-설계안.md) §2·§3의 그룹별 결측 처리 원칙.
+# Group A(고정·준고정): baseline이 실제 결측(NaN)일 때만 최신순으로 과거 유효값을 채운다.
+GROUP_A_BACKFILL_COLUMNS = ("gender", "education_level", "major_group")
+
+# Group D(과거 누적 이력) 경험 여부형 9개: 2021~baseline-1 중 한 해라도 1이면 baseline도 1로
+# 유지한다(과거 0·현재 결측만으로 현재도 0이라고 단정하지 않음).
+GROUP_D_EVER_FLAG_COLUMNS = (
+    "graduation_prep_experience",
+    "graduation_job_search_experience",
+    "has_certificate",
+    "has_employment_certificate",
+    "has_major_related_certificate",
+    "has_vocational_training",
+    "exam_prep_experience",
+    "school_work_experience",
+    "ever_worked_before",
+)
+
+# Group D 개수형 4개: 코드북 조사 결과 연도별 "있다" 응답자 수가 전체 응답자 감소폭보다 훨씬 크게
+# 줄어드는 패턴이 있어(예: e301 자격증 취득 2차 1,215명→3차 347명→4차 283명), 각 연도 값을
+# "그 해 새로 생긴 건수"로 보고 baseline까지 연도별로 단순 합산한다 〔AI 제안 · 사람 검토 필요 —
+# 설문 문항 원문으로 확정된 것은 아니고 코드북 응답 패턴으로 추정한 것. 세션 로그 참조〕.
+# vocational_training_hours·past_work_months는 기간형이고 이미 "1번째 일자리/훈련만 계산"하는
+# 설계 한계가 안건함에 등록돼 있어 합산 대상에서 제외한다.
+GROUP_D_CUMULATIVE_COUNT_COLUMNS = (
+    "certificate_count",
+    "vocational_training_count",
+    "exam_prep_count",
+    "past_job_count",
+)
+
 
 def _validate_wave(frame: pd.DataFrame, year: int, required: set[str]) -> None:
     missing = sorted(required - set(frame.columns))
@@ -22,13 +53,78 @@ def _validate_wave(frame: pd.DataFrame, year: int, required: set[str]) -> None:
         raise ValueError(f"{year}년 표준 입력의 SAMPID는 결측·중복 없이 한 사람당 한 행이어야 합니다.")
 
 
+def _prior_year_column(
+    annual_data: Mapping[int, pd.DataFrame], year: int, sampid: pd.Series, column: str
+) -> pd.Series:
+    """`year` 조사에 실제 응답한 사람만 대상으로 `column` 값을 `sampid` 순서에 맞춰 조회한다."""
+    frame = annual_data.get(year)
+    if frame is None or column not in frame.columns:
+        return pd.Series(pd.NA, index=sampid.index)
+    responded = frame.loc[frame["responded"].eq(1).fillna(False)]
+    lookup = responded.drop_duplicates("SAMPID", keep="last").set_index("SAMPID")[column]
+    return sampid.map(lookup)
+
+
+def _backfill_group_a(
+    period: pd.DataFrame, annual_data: Mapping[int, pd.DataFrame], baseline_year: int
+) -> pd.DataFrame:
+    """Group A(고정·준고정): baseline이 실제 결측일 때만 최신순으로 과거 유효값을 채운다.
+
+    `NotApplicable`은 그 해에 이미 확정된 사실이라 덮어쓰지 않고, 그 경우도 더 과거를 계속 찾는다.
+    """
+    filled = period.copy()
+    for column in GROUP_A_BACKFILL_COLUMNS:
+        if column not in filled.columns:
+            continue
+        needs_fill = filled[column].isna()
+        if not needs_fill.any():
+            continue
+        for year in range(baseline_year - 1, 2020, -1):
+            if not needs_fill.any():
+                break
+            prior = _prior_year_column(annual_data, year, filled["SAMPID"], column)
+            usable = needs_fill & prior.notna() & prior.ne("NotApplicable")
+            filled.loc[usable, column] = prior.loc[usable]
+            needs_fill &= ~usable
+    return filled
+
+
+def _accumulate_group_d(
+    period: pd.DataFrame, annual_data: Mapping[int, pd.DataFrame], baseline_year: int
+) -> pd.DataFrame:
+    """Group D(과거 누적 이력): 경험 여부형은 한 해라도 1이면 1로, 개수형 4개는 baseline까지 합산한다."""
+    filled = period.copy()
+    for column in GROUP_D_EVER_FLAG_COLUMNS:
+        if column not in filled.columns:
+            continue
+        combined = filled[column].astype("Int64")
+        for year in range(2021, baseline_year):
+            prior = _prior_year_column(annual_data, year, filled["SAMPID"], column)
+            combined = combined.mask(prior.eq(1).fillna(False), 1)
+        filled[column] = combined
+
+    for column in GROUP_D_CUMULATIVE_COUNT_COLUMNS:
+        if column not in filled.columns:
+            continue
+        total = filled[column].astype("Float64")
+        has_value = total.notna()
+        for year in range(2021, baseline_year):
+            prior = _prior_year_column(annual_data, year, filled["SAMPID"], column).astype("Float64")
+            total = total.add(prior, fill_value=0)
+            has_value = has_value | prior.notna()
+        filled[column] = total.mask(~has_value)
+    return filled
+
+
 def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.DataFrame:
     """세 전환의 미취업자(실업·비경제활동) 전체 행을 하나의 Person-Period DataFrame으로 만든다.
 
     입력 annual_data의 각 행은 해당 조사연도에 실제 응답한 패널 한 명의 표준화된 값이다.
     `job_seeker`, `recent_employment_prep` 등 취업준비 관련 값은 적격 조건이 아니라
-    기준연도 Feature로 남긴다. 이 함수는 기준연도 이후 Feature를 합치지 않으므로
-    Feature 누수를 만들지 않는다.
+    기준연도 Feature로 남긴다. 이 함수는 기준연도 이후(미래) Feature를 합치지 않으므로
+    Feature 누수를 만들지 않는다. 기준연도 이전 데이터는 13번 설계안 §2·§3에 따라
+    Group A/D 일부 Feature의 결측 보완·이력 누적에만 쓴다(`_backfill_group_a`,
+    `_accumulate_group_d`).
     """
     expected = set(range(2021, 2025))
     missing_years = sorted(expected - set(annual_data))
@@ -54,6 +150,8 @@ def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.D
             & merged["target_ecoact"].isin([1, 2, 3]).fillna(False)
         )
         period = merged.loc[eligible].copy()
+        period = _backfill_group_a(period, annual_data, baseline_year)
+        period = _accumulate_group_d(period, annual_data, baseline_year)
         period.insert(1, "baseline_year", baseline_year)
         period.insert(2, "target_year", baseline_year + 1)
         period["nonemployment_type"] = period["ecoact"].map({2: "unemployed", 3: "economically_inactive"})

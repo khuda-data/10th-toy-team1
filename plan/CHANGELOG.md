@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-08-16 — build_person_period.py 브랜치 충돌 해결 + 13번 설계안 §2·§3 그룹별 결측 보완 구현
+
+### 만든 것
+
+- `build_person_period.py`의 적격 대상자 판정 로직이 `feat/choi-1110-...` 브랜치와 main(hanliyagi) 사이에 갈라져 있던 걸(다음연도 `ECOACT` 유효성 필터 유무) 13번 설계안 §1을 근거로 main 쪽으로 통일했다. `06-인터페이스.md`·`11-...프로토콜.md`도 같이 통일했다(아직 feat 브랜치에만 있고 main 미반영, hanliyagi 최종 확인 대기).
+- 13번 설계안 §2·§3의 그룹별 결측 처리 원칙을 `build_person_period.py`에 구현했다: Group A(`gender`·`education_level`·`major_group`)는 baseline 실제 결측일 때만 최신순 과거 유효값 보완, Group D 경험여부형 9개는 baseline까지 한 해라도 1이면 1, Group D 개수형 4개(`certificate_count`·`vocational_training_count`·`exam_prep_count`·`past_job_count`)는 baseline까지 연도별 합산.
+
+### 확인한 것
+
+- 실제 원자료로 검증 — Person-Period 14,906행/7,143명은 기존과 동일(백필이 행 수를 바꾸지 않음), `major_group` 결측률은 31.8%→25.2%로 감소해 백필이 실제로 작동함을 확인.
+- 개수형 4개의 "연도별 신규 발생분" 해석은 코드북 응답 패턴(연도별 응답자 수가 전체 감소폭보다 크게 줄어듦)으로 추정한 것이지 문항 원문으로 확정한 건 아니다.
+- `past_job_count`·`past_work_months`를 `JOBWAVE`/`JOBSEQ` 기반 직업력 로스터로 정확히 재구성하려면 그 데이터 파일이 필요한데, 코드북만 있고 실제 데이터가 없다.
+
+### 확인할 점
+
+- hanliyagi가 `target_ecoact` 필터 채택에 동의하는지, 코드북 응답 패턴 추정이 맞는지, 직업력 로스터 데이터를 구할 수 있는지 — 안건함 참조.
+
+---
+
 ## 2026-08-16 — Person-Period 전처리 설계안 편입
 
 ### 만든 것
