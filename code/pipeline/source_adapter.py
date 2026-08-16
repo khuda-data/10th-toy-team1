@@ -155,8 +155,13 @@ def _categorical_from_reason(value: pd.Series, reason: pd.Series) -> pd.Series:
     `NotApplicable`은 원자료 분기로 이미 확정된 사실이라 학습 없이 그대로 별도 범주로 남겨야
     프로토콜의 "Missing·NotApplicable은 통합하지 않는다"를 지킬 수 있다. `_normalize_variable`이
     계산하는 사유를 버리지 않고 값에 다시 실어보내는 역할만 한다.
+
+    `value`는 `pd.to_numeric`을 거쳐 오는데, 원자료 연도별 결측 유무에 따라 dtype이
+    int64/float64로 들쭉날쭉하다. float64를 바로 문자열화하면 같은 코드값이 "2"와
+    "2.0"처럼 서로 다른 범주로 쪼개진다(2026-08-16 education_level·student_status에서
+    실제 발견). 정수 코드로 캐스팅해 문자열화 형태를 통일한다.
     """
-    result = value.astype("string")
+    result = value.astype("Int64").astype("string")
     result.loc[reason.eq("NotApplicable")] = "NotApplicable"
     return result
 
