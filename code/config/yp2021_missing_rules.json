@@ -150,6 +150,10 @@
       "source_codes": {"9090908": "Missing", "9090909": "Missing"},
       "blank_reason": "NotApplicable"
     },
+    "school_work_experience_gate": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
     "job_history_year": {
       "source_codes": {"9090908": "Missing", "9090909": "Missing"},
       "blank_reason": "NotApplicable"

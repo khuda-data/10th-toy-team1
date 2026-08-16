@@ -63,8 +63,8 @@ def _source_columns(wave: int) -> list[str]:
             f"{question}e101", f"{question}e102", f"{question}e108_1",
             # 경험일자리(일 경험) 유무·횟수 — 2~4차용 문항.
             f"{question}d001", f"{question}d002",
-            # 재학중 일경험 유형[1] — 게이팅(여부) 문항은 코드북에서 못 찾음. 값이 있으면 '있음'만 판정.
-            f"{question}a186_1",
+            # 재학중 일경험 여부(게이트)·유형[1] — a172가 게이팅 문항(1=있다/2=없다, 코드북 확인 2026-08-16).
+            f"{question}a172", f"{question}a186_1",
             # 취업노력 1~3순위(다중응답) — 2~4차는 순위형, prep_effort_01~12로 멀티핫 전개.
             f"{question}c701a", f"{question}c701b", f"{question}c701c",
             # 시험준비: 경험여부·개수·[1]번째의 현재 지속 여부. 1차엔 없음.
@@ -78,8 +78,8 @@ def _source_columns(wave: int) -> list[str]:
         columns.extend([f"{question}d501", f"{question}d502"])
         # 1차는 취업노력을 순위형(c701a~c) 대신 문항 12개의 개별 예/아니오로 물어봄 — 코드·순서가 c701의 값 1~12와 동일(코드북 확인).
         columns.extend([f"{question}c70{i}" for i in range(2, 14)])
-        # 재학중 일경험 유형[1]의 1차 전용 문항(회고조사). a186_1과 짝을 이룸.
-        columns.append(f"{question}a616_1")
+        # 재학중 일경험 여부(게이트)·유형[1]의 1차 전용 문항(회고조사). a601이 a172, a616_1이 a186_1과 짝을 이룸(코드북 확인 2026-08-16).
+        columns.extend([f"{question}a601", f"{question}a616_1"])
         # 경험일자리[1]의 시작·종료 시점 — 1차 전용(회고조사) 문항. d003/d036/d074와 짝을 이룸.
         columns.extend([
             f"{question}d503a_1", f"{question}d503b_1",
@@ -292,7 +292,10 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         frame["has_certificate"] = _yes_no(cert_flag)
         frame["certificate_count"] = _conditional_zero(cert_flag, cert_count_raw)
 
-        # 전공 관련도(1~4점, 3점 이상 '어느 정도 관련 있다'부터를 관련 있음으로 봄 — AI 제안 · 사람 검토 필요).
+        # 전공 관련도(e307_1) 임계값 확정(2026-08-16, choi-1110): 1=전혀 없다/2=없는 편이다/
+        # 3=어느 정도 관련이 있다/4=매우 관련 깊다 척도에서 3점 이상을 '관련 있음'으로 채택.
+        # 근거는 AI가 제시(코드북 척도 문구 대조, 3점 이상 기준 77%(941/1215명) vs 4점만 기준 43%(520/1215명)
+        # 로 갈리는 것까지 제시) → choi-1110이 그 근거를 검토해 3점 이상 기준으로 확정.
         major_related_raw, _ = _normalize_variable(
             source.get(f"{question}e307_1", pd.Series(pd.NA, index=source.index)), "certificate_major_related"
         )
@@ -339,7 +342,14 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         frame["past_job_count"] = _conditional_zero(worked_flag, job_count_raw)
 
         # --- 전공계열: a413, 1~4차 전체(코드북 확인). 범주형이라 NotApplicable 사유를 문자열로 보존.
-        frame["major_group"] = _normalize_categorical(source[f"{question}a413"], "major_group")
+        # 통합설문지 47쪽(문1) 확인(2026-08-16): a413은 "대학교 또는 대학원에 재학 중인 경우"만 응답하는
+        # 문항이다("5-2. 재학생 공통" 섹션). student_type이 NotApplicable(현재 재학 중 아님)인데 a413도
+        # 결측이면 무응답이 아니라 애초에 안 물어본 것이라 NotApplicable로 재분류한다(실제 데이터 교차검증:
+        # student_type=NotApplicable인 사람 중 major_group 결측이 3733/4716명으로 대다수 일치, 2026-08-16).
+        # student_type이 실제 값(재학 중)인데도 a413이 결측이면 그건 진짜 무응답이라 Missing으로 남긴다.
+        major_group_value = _normalize_categorical(source[f"{question}a413"], "major_group")
+        not_current_student = frame["student_type"].eq("NotApplicable")
+        frame["major_group"] = major_group_value.mask(major_group_value.isna() & not_current_student, "NotApplicable")
 
         # --- 졸업 후 경과 개월: 조사시점(date_y/date_m) - 최종학력 취득시점(eduy/edum).
         # eduy/edum은 기존에 이미 로딩만 되고 안 쓰이던 컬럼(원래 코드에 있었음).
@@ -411,13 +421,17 @@ def standardize_annual_frames(raw_frames: Mapping[int, pd.DataFrame]) -> dict[in
         frame["exam_prep_count"] = _conditional_zero(exam_flag, exam_count_raw)
         frame["currently_preparing_exam"] = _conditional_zero(exam_flag, _yes_no(exam_current_raw).astype("Float64"))
 
-        # --- 재학중 일경험 유형[1] 〔AI 제안 · 사람 검토 필요〕: 상위 '여부' 게이팅 문항을 코드북에서 못 찾아
-        # 값이 있으면 1(있음)만 판정하고, 없으면 NA로 둔다(0으로 단정하지 않음 — '경험없음'과 '문항 비해당'을 못 가름).
-        school_work_col = f"{question}a616_1" if wave == 1 else f"{question}a186_1"
-        school_work_type, _ = _normalize_variable(
-            source.get(school_work_col, pd.Series(pd.NA, index=source.index)), "school_work_experience_type"
+        # --- 재학중 일경험 여부: 게이팅 문항을 코드북에서 직접 확인함(2026-08-16, 통합설문지·코드북 대조).
+        # 1차는 a601("[과거학교|재학중일] 재학 중 일자리 경험 여부"), 2~4차는 a172(같은 라벨)가 게이트다.
+        # 값 1=있다/2=없다이며, "없다"는 논리적 0, "있다"인데 하위 문항(a186_1/a616_1)이 없어도 여부 자체는 확정된
+        # 사실이라 게이트 값만으로 판정한다(하위 유형 문항 완성도에 기대지 않음).
+        school_work_gate_col = f"{question}a601" if wave == 1 else f"{question}a172"
+        school_work_gate, _ = _normalize_variable(
+            source.get(school_work_gate_col, pd.Series(pd.NA, index=source.index)), "school_work_experience_gate"
         )
-        frame["school_work_experience"] = school_work_type.notna().astype("Int64").mask(school_work_type.isna())
+        frame["school_work_experience"] = _conditional_zero(
+            school_work_gate, pd.Series(1, index=source.index, dtype="Float64")
+        )
 
         # --- 과거 근무 개월(첫 번째 경험일자리만) 〔AI 제안 · 사람 검토 필요〕: 여러 일자리 중 [1]번째만 계산.
         # 여러 일자리 총 근무기간 합산은 겹치는 기간 처리 등 별도 설계가 필요해 이번엔 [1]번째만 씀.
