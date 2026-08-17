@@ -31,3 +31,6 @@
 - **raw 데이터 있는 환경에서 `python -m code.pipeline.run_pipeline --raw-zip ... --run-modeling --tune` 재실행 필요** — 특히 `sample_weight`가 `model__sample_weight`로 정상 라우팅되는지, `n_prior_periods`가 `features.yaml` 등록으로 실제 X에 들어가는지 확인.
 - `tune_model`의 `sample_weight_train`이 GridSearchCV 검증 fold 채점(scoring)에는 반영되지 않는다는 점 — 학습에만 적용할지, scoring까지 가중치 반영할지는 아직 팀이 확정하지 않음(`06-인터페이스.md`에 ⬜ 표시해둠).
 - 이 브랜치(`feat/wjdwlsah-oversampling-mitigation`)와 `feat/wjdwlsah-major-group-backfill` 둘 다 push 전 — GitHub 장애(2026-08-17)는 복구 확인함, push·PR 생성은 다음 단계.
+
+## 추가 (같은 세션, 이어서)
+- `업데이트.md` 최상단에 이 작업 항목 추가, `회의기록/안건.md`에 `sample_weight` scoring 반영 여부(AGENTS.md §2-7 — 팀 결정 필요 사안) 등록(AGENTS.md §13, pre-push 훅 통과 요건).
