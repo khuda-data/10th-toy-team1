@@ -16,9 +16,13 @@ class DatasetBundle:
     y: pd.Series
     groups: pd.Series
     metadata: pd.DataFrame
+    # 오버샘플링 완화용(2026-08-18): 1 / 이 사람이 이 데이터셋(Global 또는 개별 Local)에서
+    # 차지하는 행 수. 이 데이터셋 자체의 행 구조를 반영해야 하므로 Global/Local마다 각각
+    # 계산한다(person_period 기준으로 한 번만 계산하는 n_prior_periods와는 다른 성격).
+    sample_weight: pd.Series
 
     def to_frame(self) -> pd.DataFrame:
-        """공용 parquet 저장용으로 metadata, Feature, target을 한 DataFrame으로 합친다."""
+        """공용 parquet 저장용으로 metadata, Feature, target, 가중치를 한 DataFrame으로 합친다."""
         frame = self.metadata.reset_index(drop=True).copy()
         for column in self.X.columns:
             if column in frame.columns:
@@ -27,4 +31,5 @@ class DatasetBundle:
                 continue
             frame[column] = self.X[column].reset_index(drop=True)
         frame["employment_transition"] = self.y.reset_index(drop=True).astype("int8")
+        frame["sample_weight"] = self.sample_weight.reset_index(drop=True)
         return frame
