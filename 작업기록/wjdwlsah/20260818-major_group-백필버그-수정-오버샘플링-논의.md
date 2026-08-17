@@ -26,6 +26,9 @@
 - `git revert --abort` 후 `git status`로 working tree clean·`origin/main`과 일치함을 확인.
 
 ## 남은 것 / 막힌 것
-- GitHub 자체 장애(2026-08-17 13:40 UTC~, Pull Requests·API·Git 작업 전반 영향) 진행 중이라 이 커밋 push·PR 생성은 장애 복구 후 시도해야 함.
+- GitHub 자체 장애(2026-08-17 13:40 UTC~)는 복구 확인함(2026-08-18) — push·PR 생성 진행.
 - `_backfill_group_a` 수정을 실제 raw 데이터로 재실행해 983명(2022 baseline 345명·2023 baseline 638명) 중 몇 명이 실제로 회복되는지 확인 필요.
 - 오버샘플링 완화는 새 브랜치(`feat/wjdwlsah-oversampling-mitigation`)에서 이어서 진행 — `n_prior_periods`는 `code/config/features.yaml`에 numeric으로 등록해야 실제로 모델 입력에 반영됨(`build_features`가 미등록 컬럼은 조용히 버림). `sample_weight`는 Global 1회 계산, Local은 분할 후 각 Local 데이터셋 안에서 재계산 예정. `tune_model`(`code/model/tune.py`)에 `sample_weight_train` 인자 추가 구현 필요.
+
+## 추가 (같은 세션, 이어서)
+- `업데이트.md` 최상단에 이 버그 수정 항목 추가(AGENTS.md §13, pre-push 훅 통과 요건).
