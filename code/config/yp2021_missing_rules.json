@@ -61,6 +61,106 @@
         "9999999": "Missing"
       },
       "blank_reason": "NotApplicable"
+    },
+    "certificate_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "certificate_count": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "certificate_major_related": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "employment_cert_spec": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "vocational_training_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "vocational_training_count": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "vocational_training_hours": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "ever_worked_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "job_count": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "major_group": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "graduation_year": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "graduation_month": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "survey_year": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "survey_month": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "Missing"
+    },
+    "graduation_prep_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "graduation_job_search_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "job_search_effort_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "job_search_effort_rank": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "exam_prep_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "exam_prep_count": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "exam_prep_current_flag": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "school_work_experience_type": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "school_work_experience_gate": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "job_history_year": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
+    },
+    "job_history_month": {
+      "source_codes": {"9090908": "Missing", "9090909": "Missing"},
+      "blank_reason": "NotApplicable"
     }
   }
 }

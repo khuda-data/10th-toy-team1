@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -44,7 +45,13 @@ def build_features(
         )
     output = frame.reindex(columns=columns).copy()
     for column in feature_columns_by_type(config, "numeric"):
-        output[column] = pd.to_numeric(output[column], errors="coerce")
+        # nullable Int64/Float64를 그대로 두면 scikit-learn(SimpleImputer 등)이 pd.NA를 numpy
+        # object 배열로 받아 "boolean value of NA is ambiguous"로 죽는다(2026-08-16 확인).
+        # float64로 바꾸면 pd.NA가 np.nan으로 자동 변환돼 scikit-learn이 정상적으로 결측을 인식한다.
+        output[column] = pd.to_numeric(output[column], errors="coerce").astype("float64")
     for column in feature_columns_by_type(config, "categorical"):
-        output[column] = output[column].astype("string")
+        # string dtype의 결측 마커도 pd.NA라 같은 문제가 난다. object로 바꾼 뒤 pd.NA를
+        # np.nan으로 명시적으로 치환해야 scikit-learn이 인식하는 결측 표기와 맞는다.
+        series = output[column].astype("string").astype(object)
+        output[column] = series.where(series.notna(), np.nan)
     return output
