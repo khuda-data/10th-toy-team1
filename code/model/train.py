@@ -58,6 +58,7 @@ def train_model(
     feature_config: str | Path | dict,
     model_config: str | Path | dict,
     params: dict | None = None,
+    sample_weight_train: pd.Series | None = None,
 ) -> Pipeline:
     """Train DataFrame만 이용해 전처리와 분류기를 함께 fit한다.
 
@@ -68,4 +69,5 @@ def train_model(
     preprocessor = build_preprocessor(X_train, feature_config, model_name=model_name)
     model = build_estimator(model_name, model_config, params=params)
     pipeline = Pipeline([("preprocessor", preprocessor), ("model", model)])
-    return pipeline.fit(X_train, y_train)
+    fit_params = {} if sample_weight_train is None else {"model__sample_weight": sample_weight_train}
+    return pipeline.fit(X_train, y_train, **fit_params)

@@ -21,6 +21,7 @@ def tune_model(
     feature_config: str | Path | dict,
     model_config: str | Path | dict,
     search_method: str | None = None,
+    sample_weight_train: pd.Series | None = None,
 ):
     """GridSearchCV(기본) 또는 팀 공통 RandomizedSearchCV를 Train 내부 CV로 실행한다."""
     config = load_model_config(model_config)
@@ -54,4 +55,9 @@ def tune_model(
         )
     else:
         raise ValueError("search_method는 grid 또는 randomized여야 합니다.")
-    return searcher.fit(X_train, y_train, groups=groups_train)
+    fit_params = {"groups": groups_train}
+    if sample_weight_train is not None:
+        # 학습(fit)에만 반영되고, GridSearchCV가 하이퍼파라미터를 고르는 검증 fold 채점(scoring)에는
+        # 적용되지 않는다 〔AI 제안 · 사람 검토 필요 — 이 항목은 아직 팀이 확정하지 않음, 2026-08-18〕.
+        fit_params["model__sample_weight"] = sample_weight_train
+    return searcher.fit(X_train, y_train, **fit_params)

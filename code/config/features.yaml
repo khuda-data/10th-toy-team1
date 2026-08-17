@@ -57,6 +57,9 @@ features:
   - {name: ever_worked_before, type: numeric, group: work_history}
   - {name: past_job_count, type: numeric, group: work_history}
   - {name: past_work_months, type: numeric, group: work_history}
+  # 오버샘플링 완화용(2026-08-18): 같은 사람이 이전에 몇 번 더 미취업으로 관찰됐는지.
+  # build_person_period_dataset()에서 Global 전체 이력 기준으로 1회 계산, Local엔 그대로 이어받는다.
+  - {name: n_prior_periods, type: numeric, group: panel_history}
 
 # 공통 전처리 기준. 개별 실험에서 값을 바꾸지 않는다.
 preprocessing:

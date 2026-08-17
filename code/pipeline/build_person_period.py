@@ -162,4 +162,10 @@ def build_person_period_dataset(annual_data: Mapping[int, pd.DataFrame]) -> pd.D
 
     result = pd.concat(periods, ignore_index=True)
     result["SAMPID"] = result["SAMPID"].astype("string")
-    return result.sort_values(["SAMPID", "baseline_year"], kind="stable").reset_index(drop=True)
+    result = result.sort_values(["SAMPID", "baseline_year"], kind="stable").reset_index(drop=True)
+    # 오버샘플링 완화 feature(2026-08-18, wjdwlsah 확정): 같은 사람이 이전에 몇 번 더
+    # 미취업 상태로 관찰됐는지(0부터). Global 전체 이력 기준으로 여기서 한 번만 계산해야
+    # Local로 필터링된 뒤에도 값이 왜곡되지 않는다(예: 특정 연도에 희망직업 미응답으로
+    # Local에서 그 행만 빠져도, 이 값은 실제 반복 이력을 그대로 유지해야 함).
+    result["n_prior_periods"] = result.groupby("SAMPID").cumcount()
+    return result

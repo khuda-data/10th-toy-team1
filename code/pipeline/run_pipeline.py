@@ -80,12 +80,17 @@ def _metric_row(
 
 def _subset_bundle(bundle: DatasetBundle, mask: pd.Series) -> DatasetBundle:
     selected = mask.to_numpy()
+    groups = bundle.groups.loc[selected].reset_index(drop=True)
+    # 직군별 부분집합이 실제 학습 단위이므로, 가중치도 Local 전체가 아니라 이 부분집합
+    # 안에서의 행 수 기준으로 다시 계산한다(build_local_dataset과 같은 이유).
+    sample_weight = 1.0 / groups.groupby(groups).transform("size")
     return DatasetBundle(
         name=bundle.name,
         X=bundle.X.loc[selected].reset_index(drop=True),
         y=bundle.y.loc[selected].reset_index(drop=True),
-        groups=bundle.groups.loc[selected].reset_index(drop=True),
+        groups=groups,
         metadata=bundle.metadata.loc[selected].reset_index(drop=True),
+        sample_weight=sample_weight.astype("float64"),
     )
 
 
@@ -105,11 +110,13 @@ def _fit_model(bundle: DatasetBundle, *, tune: bool, model_name: str, feature_co
         search = tune_model(
             bundle.X, bundle.y, bundle.groups,
             model_name=model_name, feature_config=feature_config, model_config=model_config,
+            sample_weight_train=bundle.sample_weight,
         )
         return search.best_estimator_, search.best_params_
     fitted = train_model(
         bundle.X, bundle.y, bundle.groups,
         model_name=model_name, feature_config=feature_config, model_config=model_config,
+        sample_weight_train=bundle.sample_weight,
     )
     return fitted, {}
 

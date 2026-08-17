@@ -48,4 +48,5 @@ def select_split(bundle: DatasetBundle, split_ids: pd.DataFrame, split: str) -> 
         y=bundle.y.loc[mask].reset_index(drop=True),
         groups=bundle.groups.loc[mask].reset_index(drop=True),
         metadata=bundle.metadata.loc[mask].reset_index(drop=True),
+        sample_weight=bundle.sample_weight.loc[mask].reset_index(drop=True),
     )
