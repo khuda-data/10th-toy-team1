@@ -3,6 +3,7 @@ pandas
 numpy
 PyYAML
 scikit-learn
+joblib
 pyarrow
 xgboost
 lightgbm

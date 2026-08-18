@@ -34,3 +34,28 @@
 
 ## 추가 (같은 세션, 이어서)
 - `업데이트.md` 최상단에 이 작업 항목 추가, `회의기록/안건.md`에 `sample_weight` scoring 반영 여부(AGENTS.md §2-7 — 팀 결정 필요 사안) 등록(AGENTS.md §13, pre-push 훅 통과 요건).
+
+## 추가 (2026-08-18, 같은 날 이어서) — n_prior_periods·sample_weight 독립 분리 + raw 데이터 실 검증
+
+### 지침 (내가 시킨 것)
+- 위 구현은 `n_prior_periods`(Feature)와 `sample_weight`(학습 가중치)가 항상 같이 켜지는 구조였는데, "①기존 42개 Feature만(가중치 X) ②+n_prior_periods만(가중치 X) ③+sample_weight만(Feature X)" 세 조건을 다른 건 전부 고정한 채 비교·대조하고 싶다고 요청. PR #4(major_group 백필)까지 머지된 상태를 전제로, 두 장치를 서로 독립적으로 켜고 끌 수 있게(예: `use_n_prior_periods`/`use_sample_weight`) 고쳐 달라고 지시. `n_prior_periods`가 그냥 `features.yaml`의 `features:`에 있으면 기존 42개 모델도 자동으로 43개가 돼버리니, 기본 42개 모델의 재현성을 반드시 지키라고 명시. 세 모델은 산출물을 독립적으로 취급하고 이름으로 구분해 달라고 요청.
+
+### AI가 한 일
+- `code/config/features.yaml`: `n_prior_periods`를 `features:`에서 빼서 별도 `optional_features:` 섹션으로 이동 — 명시적으로 요청하지 않으면 X에 안 들어감.
+- `code/preprocess/build_features.py`: `feature_columns()`/`feature_columns_by_type()`/`build_features()`에 `extra_features` 인자 추가. 기본값(`None`)은 기존 42개와 완전히 동일, `extra_features=["n_prior_periods"]`로 명시했을 때만 43개로 확장.
+- `code/preprocess/preprocess.py`: `build_preprocessor()`의 numeric/categorical 컬럼 목록을 `X_train.columns`에 실제로 있는 것만 쓰도록 변경 — `train_model`/`tune_model`에 별도 플래그를 안 넘겨도 X의 실제 컬럼 구성에 자동으로 맞춰짐.
+- `code/pipeline/build_global.py`, `code/pipeline/build_local.py`: `use_n_prior_periods: bool = False` 인자 추가, `build_features(..., extra_features=...)`로 라우팅.
+- `code/pipeline/run_pipeline.py`: 전면 개편 —
+  - `experiment_name(use_n_prior_periods, use_sample_weight)`로 네 조합(`baseline_42features`/`with_n_prior_periods`/`with_sample_weight`/`with_n_prior_periods_and_sample_weight`) 이름 결정.
+  - `_fit_model(..., use_sample_weight: bool = False)` — 기본값이 `False`로 바뀌어, 명시적으로 켜지 않으면 `sample_weight_train=None`(가중치 없이 학습).
+  - 결과 저장 경로를 `data/result/` → `data/result/<experiment>/`로 전부 분리(datasets/splits/metrics/feature_importance/models).
+  - `joblib.dump`로 Global/직군별 Local 학습 Pipeline을 `<experiment>/models/*.joblib`에 저장 — 이전엔 best_params.json만 있고 실제 모델 객체는 저장 안 됐음(이번에 새로 추가).
+  - `--use-n-prior-periods`/`--use-sample-weight`/`--compare-oversampling-mitigation`(raw를 한 번만 읽어 세 실험을 순서대로 다 실행) CLI 옵션 추가.
+  - metrics.csv/feature_importance.csv/best_params.json에 `experiment` 컬럼 추가.
+- `code/requirements.txt`: `joblib` 추가(모델 직렬화용, 실제로는 scikit-learn 종속으로 이미 설치돼 있었음).
+- `plan/details/06-인터페이스.md`: 파일 경로를 `<experiment>` 하위 구조로 전부 갱신, §3 함수 계약에 `use_n_prior_periods`/`use_sample_weight`/`experiment_name`/`_fit_model` 추가, 변경 이력·작성 출처 표 갱신(이번 분리는 AI 제안이 아니라 **사용자가 직접 설계·지시**했음을 명시).
+
+### 검증 (내가 직접 확인한 것)
+- 수정한 6개 Python 파일 전부 `ast.parse` 문법 검증 통과.
+- **이번엔 raw 데이터가 있었다** — `C:\Users\USER\Documents\KHUDA_10기\Toy_project\데이터셋`에서 발견, PR #4 검증 때 이미 `YP2021_w01~w04.xlsx` 표준화 결과를 캐싱해둠. PR #4(`feat/wjdwlsah-major-group-backfill`)를 로컬에서만 이 브랜치에 병합한 임시 테스트 브랜치로 실제 raw 데이터 기준 검증을 진행함 (상세 결과는 아래 별도 기록 참조).
+- ⚠️ 이 로그 작성 시점 기준 push는 아직 안 함 — 실 데이터 검증 결과를 사용자에게 보고한 뒤 진행.

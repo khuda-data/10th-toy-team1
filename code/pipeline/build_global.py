@@ -15,14 +15,20 @@ def build_global_dataset(
     feature_config: str | Path | dict,
     *,
     strict_features: bool = True,
+    use_n_prior_periods: bool = False,
 ) -> DatasetBundle:
-    """Global/Local 공통 Feature 목록을 사용해 전체 Person-Period 입력을 반환한다."""
+    """Global/Local 공통 Feature 목록을 사용해 전체 Person-Period 입력을 반환한다.
+
+    use_n_prior_periods=False(기본값)는 기존 42개 Feature 그대로 재현한다. True면 X에
+    n_prior_periods를 43번째 Feature로 추가한다(2026-08-18, 세 실험 비교용).
+    """
     config = load_feature_config(feature_config)
     required = {"SAMPID", "baseline_year", "target_year", "employment_transition"}
     missing = sorted(required - set(person_period.columns))
     if missing:
         raise ValueError(f"Person-Period에 필수 컬럼이 없습니다: {', '.join(missing)}")
-    X = build_features(person_period, config, strict=strict_features)
+    extra_features = ["n_prior_periods"] if use_n_prior_periods else None
+    X = build_features(person_period, config, strict=strict_features, extra_features=extra_features)
     metadata = person_period[["SAMPID", "baseline_year", "target_year"]].copy()
     # 오버샘플링 완화용 가중치: 이 데이터셋(Global) 안에서 그 사람이 차지하는 행 수의 역수.
     # 사람당 총 가중치 합이 1이 되게 해, 반복 관측이 많은 소수 인원이 loss를 과점하지 않게 한다.
