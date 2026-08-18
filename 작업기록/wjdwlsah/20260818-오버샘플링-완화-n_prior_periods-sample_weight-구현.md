@@ -57,5 +57,10 @@
 
 ### 검증 (내가 직접 확인한 것)
 - 수정한 6개 Python 파일 전부 `ast.parse` 문법 검증 통과.
-- **이번엔 raw 데이터가 있었다** — `C:\Users\USER\Documents\KHUDA_10기\Toy_project\데이터셋`에서 발견, PR #4 검증 때 이미 `YP2021_w01~w04.xlsx` 표준화 결과를 캐싱해둠. PR #4(`feat/wjdwlsah-major-group-backfill`)를 로컬에서만 이 브랜치에 병합한 임시 테스트 브랜치로 실제 raw 데이터 기준 검증을 진행함 (상세 결과는 아래 별도 기록 참조).
-- ⚠️ 이 로그 작성 시점 기준 push는 아직 안 함 — 실 데이터 검증 결과를 사용자에게 보고한 뒤 진행.
+- **이번엔 raw 데이터가 있었다** — `C:\Users\USER\Documents\KHUDA_10기\Toy_project\데이터셋`에서 발견, PR #4 검증 때 이미 `YP2021_w01~w04.xlsx` 표준화 결과를 캐싱해둠. PR #4(`feat/wjdwlsah-major-group-backfill`)를 로컬에서만 이 브랜치에 병합한 임시 테스트 브랜치(`test/pr4-pr5-combined`, 검증 후 삭제)로 실제 raw 데이터 기준 검증을 진행함.
+- **person_period**: 총 14,906행(기대치 일치), `major_group=NotApplicable` 3,733행(PR#4 반영 확인), `n_prior_periods` 컬럼 항상 존재.
+- **Feature 분리**: `baseline_42features`는 X 컬럼 42개·`n_prior_periods` 미포함, `with_n_prior_periods`는 정확히 43개(`n_prior_periods` 1개만 추가), `with_sample_weight`는 baseline과 X 컬럼 집합 완전히 동일. Local Dataset에서도 동일하게 확인, `sample_weight` 사람별 합=1이 세 실험 전부에서 보장됨.
+- **재현성(가장 중요)**: `baseline_42features`의 X를, PR#4만 반영되고 이번 분리 리팩터링 이전인 순정 42-Feature `build_features()`를 같은 person_period에 직접 돌린 결과와 비교 — **컬럼 목록·순서·dtype·값까지 42개 전부 완전히 일치**(불일치 0건). 즉 `use_n_prior_periods=False`(기본값)는 기존 42개 모델을 한 글자도 다르지 않게 재현한다.
+- **sample_weight가 실제로 fit에 반영되는지**: `LogisticRegression`으로 Global 전체를 직접 학습해서 `baseline_42features` vs `with_sample_weight`의 회귀 계수를 비교 — 서로 다름을 확인(같았다면 가중치가 안 들어간 것이라 버그). `with_n_prior_periods`는 계수 벡터 길이가 70→71로 늘어나(One-Hot 확장 후) Feature가 실제로 추가됐음을 확인.
+- **CLI**: `experiment_name()`이 4가지 조합(baseline/n_prior_periods/sample_weight/둘다) 이름을 전부 정확히 생성함을 확인. `--compare-oversampling-mitigation`과 `--use-n-prior-periods`/`--use-sample-weight`를 동시에 주면 `parser.error`로 즉시 거부됨을 확인.
+- 검증 스크립트: `run_pr5_decouple_test.py`(3실험 격리·가중치 반영 확인), `run_reproducibility_check.py`(baseline 재현성 확인) — 둘 다 `%TEMP%\claude\...\pr4_verify\`에 있음(레포 밖, 커밋 대상 아님).
