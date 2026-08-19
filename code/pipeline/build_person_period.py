@@ -69,15 +69,22 @@ def _prior_year_column(
 def _backfill_group_a(
     period: pd.DataFrame, annual_data: Mapping[int, pd.DataFrame], baseline_year: int
 ) -> pd.DataFrame:
-    """Group A(고정·준고정): baseline이 실제 결측일 때만 최신순으로 과거 유효값을 채운다.
+    """Group A(고정·준고정): baseline이 결측이거나 `NotApplicable`일 때 최신순으로 과거 유효값을 채운다.
 
-    `NotApplicable`은 그 해에 이미 확정된 사실이라 덮어쓰지 않고, 그 경우도 더 과거를 계속 찾는다.
+    `major_group`처럼 baseline 값이 `NotApplicable`(예: 올해는 재학 중이 아니라 문항 자체를 안 받음)이어도,
+    과거 연도에 실제로 응답한 값이 있으면 그 값으로 채운다 — "가장 최근에 확인된 실제값"을 쓴다는
+    설계(2026-08-18, jungjinmo 확인)에 따른 것. 과거 연도 값이 `NotApplicable`인 경우는 그 해도
+    비해당이었다는 뜻이라 덮어쓰지 않고 더 과거를 계속 찾는다(87행).
+
+    `gender`·`education_level`은 현재 특수결측 규칙(`yp2021_missing_rules.json`)상 `NotApplicable`을
+    만들지 않아 이 조건 확장의 영향을 받지 않는다 — 앞으로 그 규칙이 바뀌면 이 함수의 동작도 같이 바뀐다는
+    점을 염두에 둘 것.
     """
     filled = period.copy()
     for column in GROUP_A_BACKFILL_COLUMNS:
         if column not in filled.columns:
             continue
-        needs_fill = filled[column].isna()
+        needs_fill = filled[column].isna() | filled[column].eq("NotApplicable")
         if not needs_fill.any():
             continue
         for year in range(baseline_year - 1, 2020, -1):
