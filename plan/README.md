@@ -58,6 +58,7 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 ├── 논문/                          ← 논문 1편당 전용 폴더 (원본 PDF + 해설 HTML/md + assets)
 │   └── EyesOnTheStreet_Quito_2025/
 ├── 작업기록/                      ← AI 세션 로그 (사람별 폴더)
+├── 설문/                          ← 실험용 설문지 (취업 스트레스 척도 22문항) + 원본 IRB 양식
 └── scripts/fig_extract/           ← 그림·표 추출 스캐폴딩 (재생성 가능, 삭제해도 됨)
 ```
 
