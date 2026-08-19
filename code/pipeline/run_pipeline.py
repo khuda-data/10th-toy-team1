@@ -4,10 +4,18 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import joblib
 import pandas as pd
+
+if hasattr(sys.stdout, "reconfigure"):
+    # Windows 콘솔 기본 코드페이지(cp949)는 이 스크립트가 출력하는 일부 문자(예: em dash)를
+    # 인코딩하지 못해 UnicodeEncodeError로 죽는다. 실제 산출물 저장은 이미 끝난 뒤 마지막
+    # 안내 print()에서만 죽는 경우라도 스크립트가 실패한 것처럼 보이므로 UTF-8로 고정한다.
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 from code.contracts import DatasetBundle
 from code.evaluation.evaluate import evaluate_model
