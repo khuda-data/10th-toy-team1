@@ -20,7 +20,7 @@
 - 산출물(`data/result/baseline_42features/` 하위 datasets·splits·models·metrics)은 전부 `.gitignore` 대상이라 이 커밋에는 없음 — 로컬에만 있음.
 
 ## 남은 것 / 막힌 것
-- 이 브랜치는 Local Model 6개 직군 데이터셋의 train/test 분할(Global 분할을 그대로 상속받아 리키지 없는지) 검증으로 이어짐 — 별도 PR(`feat/wjdwlsah-local-split-verification`, 이 브랜치에서 분기)로 올릴 예정.
+- 이 작업 다음에 Local Model 6개 직군 데이터셋의 train/test 분할(Global 분할을 그대로 상속받아 리키지 없는지) 검증이 이어짐 — 처음엔 별도 PR로 계획했으나, 최종적으로 `feat/wjdwlsah-local-split-verification` 브랜치 하나에 커밋 2개(이 커밋 → Local 검증 커밋)로 합쳐 PR 1개로 올림. 상세: `작업기록/wjdwlsah/20260819-Local-train-test-분할-실데이터검증.md`.
 
 ## 🖊 작성 출처
 | 구간 | 작성 주체 | 검토 상태 |
