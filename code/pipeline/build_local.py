@@ -17,6 +17,7 @@ def build_local_dataset(
     feature_config: str | Path | dict,
     *,
     strict_features: bool = True,
+    use_n_prior_periods: bool = False,
 ) -> DatasetBundle:
     """baseline_year까지의 가장 최근 실제 희망직업만 써서 Local 입력을 만든다."""
     history_required = {"SAMPID", "response_year", "hope_job_keco", "hope_job_source"}
@@ -42,11 +43,16 @@ def build_local_dataset(
     local = local.merge(mapping, left_on="hope_job_keco", right_on="keco_major_code", how="left", validate="many_to_one")
     local = local.drop(columns=["_row_id", "keco_major_code"])
     local = local.loc[local["job_group"].notna()].reset_index(drop=True)
-    bundle = build_global_dataset(local, feature_config, strict_features=strict_features)
+    # build_global_dataset이 person_period로 받은 프레임(여기서는 local) 자체의 행 수 기준으로
+    # sample_weight를 계산하므로, Local 부분집합 안에서 다시 계산된 가중치가 그대로 나온다.
+    bundle = build_global_dataset(
+        local, feature_config, strict_features=strict_features, use_n_prior_periods=use_n_prior_periods
+    )
     return DatasetBundle(
         name="local",
         X=bundle.X,
         y=bundle.y,
         groups=bundle.groups,
         metadata=local[["SAMPID", "baseline_year", "target_year", "hope_job_keco", "hope_job_year", "hope_job_source", "job_group"]],
+        sample_weight=bundle.sample_weight,
     )

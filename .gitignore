@@ -29,3 +29,7 @@ secrets.json
 # Public repository safety — 개인 단위 원자료에서 파생된 분석 Dataset·SAMPID split은 로컬에만 둔다.
 data/result/datasets/*.parquet
 data/result/splits/split_ids.csv
+# 실험별 경로 — 위의 기존 경로도 이전 산출물 보호를 위해 그대로 둔다.
+data/result/*/datasets/*.parquet
+data/result/*/splits/split_ids.csv
+data/result/*/models/*.joblib

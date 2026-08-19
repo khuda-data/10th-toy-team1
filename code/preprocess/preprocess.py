@@ -56,10 +56,22 @@ def build_preprocessor(
     """프로토콜의 결측·희소범주·One-Hot·Logistic 스케일링 규칙을 반환한다.
 
     반환 Pipeline은 아직 fit하지 않은 객체다. `train_model()` 또는 `tune_model()`이 Train에서만 fit한다.
+    numeric/categorical 컬럼 목록은 X_train에 실제로 있는 컬럼만 쓴다 — n_prior_periods 같은
+    optional_features는 build_features(..., extra_features=...)로 켰을 때만 X_train에 있으므로,
+    이렇게 하면 train_model/tune_model에 별도 플래그를 안 넘겨도 자동으로 맞춰진다(2026-08-18).
     """
     config = load_feature_config(feature_config)
-    numeric_columns = feature_columns_by_type(config, "numeric")
-    categorical_columns = feature_columns_by_type(config, "categorical")
+    optional_names = [item["name"] for item in config.get("optional_features", [])]
+    numeric_columns = [
+        column
+        for column in feature_columns_by_type(config, "numeric", extra_features=optional_names)
+        if column in X_train.columns
+    ]
+    categorical_columns = [
+        column
+        for column in feature_columns_by_type(config, "categorical", extra_features=optional_names)
+        if column in X_train.columns
+    ]
     missing_or_empty = [column for column in X_train.columns if X_train[column].isna().all()]
     if missing_or_empty:
         raise ValueError(

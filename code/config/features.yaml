@@ -58,6 +58,16 @@ features:
   - {name: past_job_count, type: numeric, group: work_history}
   - {name: past_work_months, type: numeric, group: work_history}
 
+# 기본 42개 Feature와 분리된 선택적 Feature. build_features(..., extra_features=[...])로
+# 명시적으로 요청했을 때만 X에 포함된다 — 여기 그냥 features:에 추가하면 기존 42개 모델도
+# 자동으로 43개짜리로 바뀌어버리므로, 기본 재현성을 지키려면 반드시 이 섹션에 둔다
+# (2026-08-18, wjdwlsah 지시: n_prior_periods·sample_weight를 독립적으로 켜고 끌 수 있어야
+# 세 실험(①Baseline ②+n_prior_periods ③+sample_weight)을 동일 조건에서 비교할 수 있음).
+optional_features:
+  # 오버샘플링 완화용(2026-08-18): 같은 사람이 이전에 몇 번 더 미취업으로 관찰됐는지.
+  # build_person_period_dataset()에서 Global 전체 이력 기준으로 1회 계산, Local엔 그대로 이어받는다.
+  - {name: n_prior_periods, type: numeric, group: panel_history}
+
 # 공통 전처리 기준. 개별 실험에서 값을 바꾸지 않는다.
 preprocessing:
   numeric_imputer: median
