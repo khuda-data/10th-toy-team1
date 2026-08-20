@@ -22,6 +22,8 @@ def tune_model(
     feature_config: str | Path | dict,
     model_config: str | Path | dict,
     search_method: str | None = None,
+    param_grid: dict[str, list] | None = None,
+    estimator_params: dict | None = None,
     sample_weight_train: pd.Series | None = None,
     parallel_backend_name: str | None = None,
     n_jobs: int = -1,
@@ -30,30 +32,31 @@ def tune_model(
 
     `parallel_backend_name`은 탐색·평가 방법을 바꾸지 않는 실행 환경 옵션이다. Jupyter에서
     저장소 패키지명 `code`와 표준 라이브러리 이름 충돌로 process worker가 실패할 때만
-    ``threading``을 지정한다.
+    ``threading``을 지정한다. ``param_grid``은 단계별 제한 탐색처럼 공통 설정의 기본 범위 대신
+    명시 범위를 사용할 때만 전달하고, ``estimator_params``는 탐색하지 않는 고정 모델 파라미터다.
     """
     config = load_model_config(model_config)
-    search = config["models"][model_name]["search"]
+    search = param_grid if param_grid is not None else config["models"][model_name]["search"]
     pipeline = Pipeline(
         [
             ("preprocessor", build_preprocessor(X_train, feature_config, model_name=model_name)),
-            ("model", build_estimator(model_name, config)),
+            ("model", build_estimator(model_name, config, params=estimator_params)),
         ]
     )
     # XGBoost의 `train_negative_positive_ratio` marker는 estimator.fit()에서 각 CV Train fold의
     # y만 보고 숫자로 바뀐다. 전체 Train 비율을 모든 fold에 재사용하지 않는다.
-    param_grid = {f"model__{name}": values for name, values in search.items()}
+    pipeline_param_grid = {f"model__{name}": values for name, values in search.items()}
     cv = StratifiedGroupKFold(
         n_splits=config["split"]["cv_n_splits"], shuffle=True, random_state=config["split"]["random_state"]
     )
     method = search_method or config["tuning"]["default_method"]
     common = {"scoring": config["tuning"]["scoring"], "cv": cv, "n_jobs": n_jobs, "refit": True}
     if method == "grid":
-        searcher = GridSearchCV(pipeline, param_grid=param_grid, **common)
+        searcher = GridSearchCV(pipeline, param_grid=pipeline_param_grid, **common)
     elif method == "randomized":
         searcher = RandomizedSearchCV(
             pipeline,
-            param_distributions=param_grid,
+            param_distributions=pipeline_param_grid,
             n_iter=config["tuning"]["randomized_n_iter"],
             random_state=config["random_seed"],
             **common,

@@ -13,6 +13,17 @@ __all__ = [
     "save_modeling_artifacts",
     "load_first_stage_best_params",
     "load_stage_fold_f1",
+    "RefinementSearchResult",
+    "RefinedModelResult",
+    "boundary_flags",
+    "count_grid_combinations",
+    "refinement_config",
+    "run_lr_refinement",
+    "run_xgb_refinement_stage_a",
+    "run_xgb_refinement_stage_b",
+    "run_xgb_refinement_stage_c",
+    "save_final_tuning_artifacts",
+    "stage3_parameter_comparison",
     "train_model",
     "tune_model",
 ]
@@ -53,5 +64,38 @@ def __getattr__(name: str):
             "save_modeling_artifacts": save_modeling_artifacts,
             "load_first_stage_best_params": load_first_stage_best_params,
             "load_stage_fold_f1": load_stage_fold_f1,
+        }[name]
+    if name in {
+        "RefinementSearchResult", "RefinedModelResult", "boundary_flags", "count_grid_combinations",
+        "refinement_config", "run_lr_refinement", "run_xgb_refinement_stage_a",
+        "run_xgb_refinement_stage_b", "run_xgb_refinement_stage_c", "save_final_tuning_artifacts",
+        "stage3_parameter_comparison",
+    }:
+        from .final_tuning import (
+            RefinementSearchResult,
+            RefinedModelResult,
+            boundary_flags,
+            count_grid_combinations,
+            refinement_config,
+            run_lr_refinement,
+            run_xgb_refinement_stage_a,
+            run_xgb_refinement_stage_b,
+            run_xgb_refinement_stage_c,
+            save_final_tuning_artifacts,
+            stage3_parameter_comparison,
+        )
+
+        return {
+            "RefinementSearchResult": RefinementSearchResult,
+            "RefinedModelResult": RefinedModelResult,
+            "boundary_flags": boundary_flags,
+            "count_grid_combinations": count_grid_combinations,
+            "refinement_config": refinement_config,
+            "run_lr_refinement": run_lr_refinement,
+            "run_xgb_refinement_stage_a": run_xgb_refinement_stage_a,
+            "run_xgb_refinement_stage_b": run_xgb_refinement_stage_b,
+            "run_xgb_refinement_stage_c": run_xgb_refinement_stage_c,
+            "save_final_tuning_artifacts": save_final_tuning_artifacts,
+            "stage3_parameter_comparison": stage3_parameter_comparison,
         }[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

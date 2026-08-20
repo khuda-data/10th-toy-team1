@@ -65,6 +65,7 @@
 | [`notebooks/`](notebooks/README.md) | 공용 `code/` 모듈을 실행해 표·그래프로 확인하는 Jupyter Notebook | Global 모델링 단계별 결과를 확인할 때 |
 | [`notebooks/global/02_feature_selection.ipynb`](notebooks/global/02_feature_selection.ipynb) | Global Stage 2 Train 내부 Feature 분석 — CV Permutation Importance·계수/gain·상관·VIF·종합표 | Stage 1 결과를 확인하고 사람이 2차 Feature 후보를 결정할 때 |
 | [`notebooks/global/03_second_model.ipynb`](notebooks/global/03_second_model.ipynb) | Global Stage 3 — 사람이 확정한 25개 Feature로 LR/XGBoost 재튜닝 및 1차/2차 Train CV·OOF 비교 | Feature 선택 뒤 Stage 4 후보를 사람이 판단할 때 |
+| [`notebooks/global/03_5_final_tuning.ipynb`](notebooks/global/03_5_final_tuning.ipynb) | Global Stage 3.5 — 25개 Feature 기준 LR/XGB 제한 refinement·OOF threshold 민감도 | Test 없이 Stage 3.5 결과를 확인할 때 |
 | [`sandbox/`](sandbox/) | 각자 개인 작업 공간 (`sandbox/<git아이디>/`) — 실험 코드·개인 중간 산출물, 리뷰 없이 자유 | 각자 작업할 때 (여기서 시작) |
 
 ---

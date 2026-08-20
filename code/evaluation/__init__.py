@@ -12,6 +12,7 @@ from .feature_analysis import (
 )
 from .importance import calculate_feature_importance
 from .oof import generate_oof_predictions
+from .threshold import calculate_threshold_sensitivity, summarize_threshold_sensitivity
 
 __all__ = [
     "bootstrap_confidence_intervals",
@@ -25,4 +26,6 @@ __all__ = [
     "numeric_correlation_analysis",
     "run_cv_feature_analysis",
     "summarize_global_modeling_inputs",
+    "calculate_threshold_sensitivity",
+    "summarize_threshold_sensitivity",
 ]

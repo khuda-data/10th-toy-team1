@@ -31,6 +31,8 @@
 | `modeling/stage_1/fold_f1.json` | Stage 1 모델별 5개 CV fold F1 | ignore |
 | `modeling/stage_2/*.csv` | Global Train 내부 Feature 분석표·상관·VIF·종합표 | ignore |
 | `modeling/stage_3/<model>_oof_predictions.parquet`, `second_stage_summary.csv`, `best_params.json`, `fold_f1.json`, `selected_features.csv` | Global Stage 3의 25개 Feature CV·OOF·파라미터·선택 목록 | ignore |
+| `modeling/stage_3_5/final_tuning_summary.csv`, `lr_refinement_results.csv`, `xgb_refinement_stage_[a-c].csv`, `final_refined_params.json`, `final_fold_f1.json` | Global Stage 3 vs 3.5 비교와 제한 refinement 전체 결과 | ignore |
+| `modeling/stage_3_5/threshold_*.csv`, `refined_<model>_oof_predictions.parquet` | refined Train OOF threshold 민감도와 0.5 기준 OOF 예측 | ignore |
 
 파일별 컬럼·타입은 [`../../plan/details/06-인터페이스.md`](../../plan/details/06-인터페이스.md)가 정본이다.
 
@@ -70,5 +72,6 @@ python -m code.pipeline.run_pipeline \
 | `modeling/stage_1/` Train OOF 보관 경로 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
 | `modeling/stage_2/` Train 내부 Feature 분석 보관 경로 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
 | Stage 3 25개 Feature 재튜닝 산출물 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
+| Stage 3.5 제한 refinement·Train OOF threshold 산출물 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260819-PR5-충돌해결-결과경로-정리.md`

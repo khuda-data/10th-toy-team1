@@ -12,6 +12,8 @@ XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보는 `GridSearc
 
 `run_global_cv_modeling()`은 같은 GridSearchCV·Train-fold-only 전처리·고정 파라미터 OOF 로직을 선택된 Global Feature set에도 재사용한다. Stage 3는 이 함수를 호출해 사람이 확정한 25개 Feature로 새로 튜닝한다. `save_modeling_artifacts()`은 단계별 OOF·summary·best_params·fold F1을 저장한다.
 
+Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사람이 지정한 제한 Grid만 `tune_model(param_grid=..., estimator_params=...)`으로 실행한다. XGBoost는 GridSearchCV를 병렬화할 때 내부 `n_jobs=1`을 적용하고, 매 fit fold에서 `scale_pos_weight=train_negative_positive_ratio` marker를 기존 방식으로 계산한다. `threshold.py`는 Train OOF 확률만 받아 threshold별 지표를 계산하며 threshold를 자동으로 바꾸지 않는다.
+
 ---
 ## 🖊 작성 출처
 
@@ -23,5 +25,6 @@ XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보는 `GridSearc
 | XGBoost fold별 `scale_pos_weight` 구현 | 사용자 요구사항을 AI가 재사용 모듈로 구현 | ⬜ 미검토 |
 | Stage 1 artifact 저장·Stage 2 고정 파라미터 재사용 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
 | Stage 3 선택 Feature 재튜닝·1차/2차 비교 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
+| Stage 3.5 제한 LR/XGB refinement와 OOF threshold 민감도 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

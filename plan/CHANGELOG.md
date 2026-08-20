@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-08-21 — Global Stage 3.5 제한 Hyperparameter Refinement·OOF threshold sensitivity 실행
+
+### 사람 확정 입력
+
+- Stage 3 `selected_features.csv`의 25개 Feature를 그대로 고정하고, 고정 Global Train·SAMPID 5-fold·F1·threshold 0.5·Train-fold-only 전처리를 유지한다.
+- Test Dataset·Test SAMPID·Test 지표는 사용하지 않는다. LR 28개 조합과 XGBoost A(81)→B(27)→C(9) 제한 Grid를 한 번만 실행하며 탐색 범위를 자동 확장하지 않는다.
+- refined Train OOF threshold sensitivity는 정보를 제공할 뿐, 모델이나 threshold를 자동 선택하지 않는다.
+
+### 만든 것·실행 결과
+
+- `code/model/final_tuning.py`와 `code/evaluation/threshold.py`, `notebooks/global/03_5_final_tuning.ipynb`를 추가했다. Stage 3.5 산출물은 기존 Stage 3을 덮어쓰지 않고 `data/result/baseline_42features/modeling/stage_3_5/`에 저장한다.
+- 실제 Global Train 11,925 Person-Period·5,737 SAMPID·25개 Feature에서 핵심 725 CV fits를 실행했다. Stage 3 artifact의 기준 파라미터는 요청서와 일치했다.
+- 실행 산출물의 수치와 boundary 표는 Notebook/CSV에서 제공한다. 최종 모델·threshold 선택과 수치의 연구적 해석은 사람이 직접 기록한다.
+
+### 사람 판단 필요
+
+- Stage 3 vs 3.5의 CV/OOF/fold/threshold 표를 확인해 Stage 4에 올릴 후보와 threshold 운영 방침을 사람이 결정·기록한다.
+
+---
+
 ## 2026-08-21 — Global Stage 3 선택 25개 Feature 재튜닝·1차/2차 비교 구현
 
 ### 사람 확정 입력
@@ -512,5 +532,6 @@
 | 구간 | 내용을 정한 주체 | 사람 검토 |
 |---|---|---|
 | 2026-08-12 개발·검증 일정 및 직무별 모델링 방식 | **사람(hanliyagi)이 직접 제공한 회의 결정** | ✅ 2026-08-12 hanliyagi |
+| 2026-08-21 Global Stage 3.5 제한 refinement·OOF threshold sensitivity 범위 | **사람(Kim ByungKyu)이 직접 제공한 Stage 3.5 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 근거 회의록: `회의기록/20260812-프로젝트-진행계획-논의.md`

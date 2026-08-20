@@ -8,6 +8,8 @@ Test 성능을 보고 모델·파라미터를 다시 고르지 않는다.
 
 `feature_analysis.py`는 Global Stage 2 전용의 Train 내부 분석을 제공한다. `run_cv_feature_analysis()`는 Stage 1의 고정 최적 파라미터로 SAMPID 5-fold를 다시 학습하고, 각 validation fold에서 원 Feature 단위 F1 Permutation Importance를 계산한다. Logistic Regression 계수와 XGBoost gain/weight는 전처리 후 dummy 열을 원 Feature로 묶은 보조 자료다. `numeric_correlation_analysis()`와 `calculate_numeric_vif()`도 Global Train만 받고, VIF는 One-Hot 범주형·이진/저변동 변수를 기계적으로 포함하지 않는다. 어떤 함수도 Feature 삭제나 모델 선택을 수행하지 않는다.
 
+`threshold.py`의 `calculate_threshold_sensitivity()`는 refined 모델의 **Train OOF** 확률에 대해서만 threshold별 Precision·Recall·F1·예측 양성비율을 계산한다. `summarize_threshold_sensitivity()`는 0.5와 OOF F1 최대 threshold를 함께 보여 주지만, 둘 중 하나를 자동 채택하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
@@ -17,5 +19,6 @@ Test 성능을 보고 모델·파라미터를 다시 고르지 않는다.
 | OOF·SAMPID bootstrap 기능 | 사용자 제공 모델링 준비 요구사항을 AI가 코드 인터페이스로 구현 | ⬜ 미검토 |
 | Stage 1 OOF 지표·고정 파라미터 OOF 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
 | Stage 2 Train 내부 Feature 분석·사람의 Feature 선택 경계 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 3.5 refined Train OOF threshold sensitivity·자동 채택 금지 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

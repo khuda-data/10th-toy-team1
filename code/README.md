@@ -54,6 +54,8 @@ Stage 2는 [`../notebooks/global/02_feature_selection.ipynb`](../notebooks/globa
 
 Stage 3는 [`../notebooks/global/03_second_model.ipynb`](../notebooks/global/03_second_model.ipynb)에서 한다. 사람이 확정한 `features.yaml`의 `global_stage2_selected_25`만 선택한 뒤, 기존의 공통 Global CV 함수로 LR/XGBoost를 처음부터 다시 튜닝한다. Stage 1의 최적 파라미터는 재사용하지 않으며, 저장된 Stage 1 결과와 Train 내부 CV·OOF 수치만 비교한다.
 
+Stage 3.5는 [`../notebooks/global/03_5_final_tuning.ipynb`](../notebooks/global/03_5_final_tuning.ipynb)에서 한다. `stage_3/selected_features.csv`의 사람이 확정한 25개를 그대로 사용하고, `model_config.yaml`의 `final_hyperparameter_refinement`에 정한 LR 28개 및 XGBoost A→B→C 제한 Grid만 한 번 탐색한다. Test를 읽지 않으며, refined Train OOF의 threshold 0.20~0.80 민감도는 선택 정보로만 저장하고 자동 채택하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
@@ -67,6 +69,7 @@ Stage 3는 [`../notebooks/global/03_second_model.ipynb`](../notebooks/global/03_
 | Stage 1 42개 Feature Train 내부 비교·OOF 보관 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
 | Stage 2 Train 내부 Feature 분석·사람의 Feature 선택 경계 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
 | Stage 3 선택 25개 Feature·재튜닝·1차/2차 비교 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
+| Stage 3.5 제한 refinement·OOF threshold 민감도·Test 미사용 경계 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 | OOF·bootstrap·저장 Dataset/split 점검·Stage 0 Notebook | 사용자 제공 모델링 준비 요구사항을 AI가 구현 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`
