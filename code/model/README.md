@@ -14,6 +14,8 @@ XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보는 `GridSearc
 
 Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사람이 지정한 제한 Grid만 `tune_model(param_grid=..., estimator_params=...)`으로 실행한다. XGBoost는 GridSearchCV를 병렬화할 때 내부 `n_jobs=1`을 적용하고, 매 fit fold에서 `scale_pos_weight=train_negative_positive_ratio` marker를 기존 방식으로 계산한다. `threshold.py`는 Train OOF 확률만 받아 threshold별 지표를 계산하며 threshold를 자동으로 바꾸지 않는다.
 
+`final_evaluation.py`는 Stage 1/3.5 artifact에서 네 고정 후보를 복원하고, Stage 4 Notebook 실행 시에만 Train 전체 fit·고정 Test 예측·결과 저장을 수행한다. Test 결과를 이용한 재튜닝·재선택 기능은 제공하지 않는다.
+
 ---
 ## 🖊 작성 출처
 

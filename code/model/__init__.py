@@ -24,6 +24,13 @@ __all__ = [
     "run_xgb_refinement_stage_c",
     "save_final_tuning_artifacts",
     "stage3_parameter_comparison",
+    "FinalCandidate",
+    "fit_final_candidates",
+    "load_final_candidates",
+    "load_stage4_cv_f1",
+    "predict_final_candidates",
+    "save_final_test_artifacts",
+    "summarize_final_predictions",
     "train_model",
     "tune_model",
 ]
@@ -64,6 +71,28 @@ def __getattr__(name: str):
             "save_modeling_artifacts": save_modeling_artifacts,
             "load_first_stage_best_params": load_first_stage_best_params,
             "load_stage_fold_f1": load_stage_fold_f1,
+        }[name]
+    if name in {
+        "FinalCandidate", "fit_final_candidates", "load_final_candidates", "load_stage4_cv_f1",
+        "predict_final_candidates", "save_final_test_artifacts", "summarize_final_predictions",
+    }:
+        from .final_evaluation import (
+            FinalCandidate,
+            fit_final_candidates,
+            load_final_candidates,
+            load_stage4_cv_f1,
+            predict_final_candidates,
+            save_final_test_artifacts,
+            summarize_final_predictions,
+        )
+        return {
+            "FinalCandidate": FinalCandidate,
+            "fit_final_candidates": fit_final_candidates,
+            "load_final_candidates": load_final_candidates,
+            "load_stage4_cv_f1": load_stage4_cv_f1,
+            "predict_final_candidates": predict_final_candidates,
+            "save_final_test_artifacts": save_final_test_artifacts,
+            "summarize_final_predictions": summarize_final_predictions,
         }[name]
     if name in {
         "RefinementSearchResult", "RefinedModelResult", "boundary_flags", "count_grid_combinations",

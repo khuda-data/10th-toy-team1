@@ -63,6 +63,7 @@
 | [`data/raw/`](data/raw/) | 원본 데이터 — 수정 금지, 출처 기록 필수 | 데이터를 받아올 때 |
 | [`data/result/`](data/result/) | 팀 공용·최종 결과물 (통합 코드가 만든 것만) | 합의된 최종 산출물을 저장할 때 |
 | [`notebooks/`](notebooks/README.md) | 공용 `code/` 모듈을 실행해 표·그래프로 확인하는 Jupyter Notebook | Global 모델링 단계별 결과를 확인할 때 |
+| [`plan/reports/`](plan/reports/README.md) | 사람이 작성·검토한 단계별 결과 보고서 | 모델링 판단과 재현용 결과를 함께 확인할 때 |
 | [`notebooks/global/02_feature_selection.ipynb`](notebooks/global/02_feature_selection.ipynb) | Global Stage 2 Train 내부 Feature 분석 — CV Permutation Importance·계수/gain·상관·VIF·종합표 | Stage 1 결과를 확인하고 사람이 2차 Feature 후보를 결정할 때 |
 | [`notebooks/global/03_second_model.ipynb`](notebooks/global/03_second_model.ipynb) | Global Stage 3 — 사람이 확정한 25개 Feature로 LR/XGBoost 재튜닝 및 1차/2차 Train CV·OOF 비교 | Feature 선택 뒤 Stage 4 후보를 사람이 판단할 때 |
 | [`notebooks/global/03_5_final_tuning.ipynb`](notebooks/global/03_5_final_tuning.ipynb) | Global Stage 3.5 — 25개 Feature 기준 LR/XGB 제한 refinement·OOF threshold 민감도 | Test 없이 Stage 3.5 결과를 확인할 때 |

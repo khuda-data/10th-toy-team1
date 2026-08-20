@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import average_precision_score, accuracy_score, confusion_matrix, f1_score, precision_score, recall_score, roc_auc_score
 
 
 def calculate_binary_metrics(
@@ -27,6 +27,8 @@ def calculate_binary_metrics(
         "recall": recall_score(observed, predicted, zero_division=0),
         "f1": f1_score(observed, predicted, zero_division=0),
         "roc_auc": roc_auc_score(observed, predicted_probability) if pd.Series(observed).nunique() == 2 else np.nan,
+        "average_precision": average_precision_score(observed, predicted_probability)
+        if pd.Series(observed).nunique() == 2 else np.nan,
         "confusion_matrix": confusion_matrix(observed, predicted, labels=[0, 1]).tolist(),
     }
 

@@ -15,6 +15,7 @@ Global 모델은 [14번 단계별 실행 흐름](../../plan/details/14-Global-�
 - `02_feature_selection.ipynb`는 Stage 1의 고정 최적 파라미터와 Global Train만 사용해 CV Permutation Importance, LR coefficient, XGBoost gain/weight, 수치형 상관관계, VIF를 보여 준다. Feature 삭제·추천·최종 목록 생성과 Test Dataset 사용은 하지 않는다.
 - `03_second_model.ipynb`는 사람이 확정한 `global_stage2_selected_25` 25개 Feature로 LR/XGBoost를 새로 튜닝하고, 저장된 Stage 1 결과와 CV·OOF 수치만 비교한다. Test 사용이나 최종 모델 선택은 하지 않는다.
 - `03_5_final_tuning.ipynb`는 Stage 3 `selected_features.csv`의 같은 25개 Feature와 저장된 Stage 3 파라미터를 기준선으로, 사람이 지정한 제한 LR/XGBoost refinement 및 refined Train OOF threshold 민감도를 실행한다. Test를 읽지 않고, 모델·threshold를 자동 선택하지 않는다.
+- `04_model_comparison.ipynb`는 사람이 직접 실행하는 최초 Global Test 평가용이다. 네 고정 후보의 Test 지표·SAMPID bootstrap·paired bootstrap·최종 25개 Feature PI를 만들며, 실행 뒤에는 Feature·파라미터·threshold를 바꾸지 않는다.
 - 이후 Notebook도 `code/` 공용 함수를 import하며, Test를 Feature·모델 선택에 사용하지 않는다.
 
 ---

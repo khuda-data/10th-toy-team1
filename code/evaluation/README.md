@@ -10,6 +10,8 @@ Test 성능을 보고 모델·파라미터를 다시 고르지 않는다.
 
 `threshold.py`의 `calculate_threshold_sensitivity()`는 refined 모델의 **Train OOF** 확률에 대해서만 threshold별 Precision·Recall·F1·예측 양성비율을 계산한다. `summarize_threshold_sensitivity()`는 0.5와 OOF F1 최대 threshold를 함께 보여 주지만, 둘 중 하나를 자동 채택하지 않는다.
 
+Stage 4는 `average_precision`을 포함한 고정 Test 지표, SAMPID 단위 bootstrap과 같은 SAMPID 표본을 공유하는 paired F1 bootstrap을 제공한다. 원 Feature permutation importance는 최종 진단 자료이며 Feature 재선택에 사용하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
