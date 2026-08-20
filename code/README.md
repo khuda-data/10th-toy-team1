@@ -13,7 +13,7 @@
 | `pipeline/` | 원자료 읽기, Person-Period, Global/Local, SAMPID split, 실행점 | YP 원문항을 표준 Feature로 바꾸는 source adapter 보완 |
 | `preprocess/` | Feature 계약 검증, Train-only 결측·희소범주·인코딩 | 이력형 Feature 누적·특수결측·분기 처리 |
 | `model/` | 다섯 공통 모델의 학습·CV 튜닝 | XGBoost fold별 `scale_pos_weight` 처리, 실행 최적화 |
-| `evaluation/` | F1 등 공통 지표와 Permutation Importance | SAMPID bootstrap 95% CI와 Global-vs-Local Δ 지표 |
+| `evaluation/` | F1 등 공통 지표와 Permutation Importance | OOF 예측·SAMPID bootstrap 95% CI와 Global-vs-Local Δ 지표 |
 | `config/` | Feature·KECO·모델 설정 단일 원본 | 팀 합의가 있는 경우에만 갱신 |
 | `requirements.txt` | 첫 실행 시 설치할 패키지 | 팀의 실제 실행 환경 확인 후 버전 freeze |
 
@@ -46,6 +46,8 @@ python -m code.pipeline.run_pipeline \
 
 현재 Global 모델의 실제 실행 순서는 [14번 단계별 실행 흐름](../plan/details/14-Global-모델링-단계별-실행흐름.md)을 따른다. 공통 모듈은 다섯 모델을 지원하지만, 이번 Global 1차·2차 비교에서는 Logistic Regression과 XGBoost만 실행하며 사람이 단계 사이의 선택을 기록한다.
 
+Stage 0 데이터·split 확인은 [`../notebooks/global/00_modeling_check.ipynb`](../notebooks/global/00_modeling_check.ipynb)에서 한다. 이 Notebook은 저장된 42개 Feature Global Dataset을 읽어 표본·SAMPID 중복·Target·baseline_year·결측률만 확인하며 모델을 학습하거나 결과를 해석하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
@@ -56,5 +58,6 @@ python -m code.pipeline.run_pipeline \
 | 구조·실행 안내 | AI가 공통 코드 뼈대를 설명 | ⬜ 미검토 |
 | Person-Period·분할·전처리·평가 기준 | **사용자 제공 YP2021 공통 전처리·모델링 프로토콜 v1.3** | ✅ 2026-08-14 검토 완료 |
 | Global 단계별 LR/XGBoost 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
+| OOF·bootstrap·저장 Dataset/split 점검·Stage 0 Notebook | 사용자 제공 모델링 준비 요구사항을 AI가 구현 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-08-20 — Global 모델 Stage 0 공용 기능·Notebook 준비
+
+### 만든 것
+
+- 공식 Global 비교 대상을 Logistic Regression과 XGBoost로 `model_config.yaml`과 공통 프로토콜에 명시했다. Decision Tree·Random Forest·LightGBM의 기존 구현과 설정은 호환성을 위해 유지한다.
+- XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보가 전체 Train 비율이 아니라 매 CV Train fold의 negative/positive 비율을 사용하도록 구현했다.
+- Train 내부 OOF 예측, SAMPID 단위 bootstrap 1,000회 95% CI, 저장 Global Dataset·split 로더, Stage 0 점검표 기능을 `code/`에 추가했다.
+- `notebooks/global/00_modeling_check.ipynb`에서 실제 baseline 42개 Feature Global Dataset의 표본·SAMPID·Target·baseline_year·Feature 존재·결측률과 세 확인 그래프를 만들 수 있게 했다.
+
+### 확인
+
+- 실제 저장 Dataset에서 Train 11,925행 / 5,737 SAMPID, Test 2,981행 / 1,406 SAMPID, SAMPID overlap 0, 42개 Feature 누락 0을 확인했다.
+- LR GridSearchCV·그룹 CV와 XGBoost GridSearchCV를 synthetic 데이터로 실행했다. XGBoost marker는 3:1 Train 데이터에서 3.0, 1:1 Train 데이터에서 1.0으로 변환됨을 확인했다.
+
+### 남은 것
+
+- Stage 0 Notebook 결과의 연구적 판단과 Stage 1 진행 결정은 사람이 직접 기록해야 한다.
+
+---
+
 ## 2026-08-20 — Global 모델링을 사람 판단 단계로 분리
 
 ### 정한 것
