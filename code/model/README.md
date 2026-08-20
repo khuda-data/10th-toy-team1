@@ -8,6 +8,10 @@ Global과 Local의 공식 비교에는 `model_config.yaml`의 `official_comparis
 
 XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보는 `GridSearchCV`의 각 Train fold에서 해당 fold의 negative/positive 비율로 계산된다. 전체 Train 비율 하나를 재사용하지 않는다.
 
+`run_first_stage_modeling()`은 42개 Feature Global Train만 받아 GridSearchCV와 고정 최적 파라미터의 SAMPID 5-fold OOF 예측을 실행한다. Test Dataset과 `sample_weight` 입력을 받지 않는다. `save_first_stage_artifacts()`은 모델별 OOF 확률뿐 아니라 비교 요약과 최적 파라미터를 함께 저장하며, Stage 2는 `load_first_stage_best_params()`로 이를 복원해 GridSearch를 다시 실행하지 않는다.
+
+`run_global_cv_modeling()`은 같은 GridSearchCV·Train-fold-only 전처리·고정 파라미터 OOF 로직을 선택된 Global Feature set에도 재사용한다. Stage 3는 이 함수를 호출해 사람이 확정한 25개 Feature로 새로 튜닝한다. `save_modeling_artifacts()`은 단계별 OOF·summary·best_params·fold F1을 저장한다.
+
 ---
 ## 🖊 작성 출처
 
@@ -15,6 +19,9 @@ XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보는 `GridSearc
 |---|---|---|
 | 본문 | AI가 사용자 제공 프로토콜의 모델 규칙을 모듈 역할로 정리 | ⬜ 미검토 |
 | Global·Local 공식 LR/XGBoost 비교 대상과 Global 단계별 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 1의 42개 Feature·Train-only·OOF 비교 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
 | XGBoost fold별 `scale_pos_weight` 구현 | 사용자 요구사항을 AI가 재사용 모듈로 구현 | ⬜ 미검토 |
+| Stage 1 artifact 저장·Stage 2 고정 파라미터 재사용 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 3 선택 Feature 재튜닝·1차/2차 비교 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

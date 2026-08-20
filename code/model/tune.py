@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+from joblib import parallel_backend
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, StratifiedGroupKFold
 from sklearn.pipeline import Pipeline
 
@@ -22,8 +23,15 @@ def tune_model(
     model_config: str | Path | dict,
     search_method: str | None = None,
     sample_weight_train: pd.Series | None = None,
+    parallel_backend_name: str | None = None,
+    n_jobs: int = -1,
 ):
-    """GridSearchCV(기본) 또는 팀 공통 RandomizedSearchCV를 Train 내부 CV로 실행한다."""
+    """GridSearchCV(기본) 또는 팀 공통 RandomizedSearchCV를 Train 내부 CV로 실행한다.
+
+    `parallel_backend_name`은 탐색·평가 방법을 바꾸지 않는 실행 환경 옵션이다. Jupyter에서
+    저장소 패키지명 `code`와 표준 라이브러리 이름 충돌로 process worker가 실패할 때만
+    ``threading``을 지정한다.
+    """
     config = load_model_config(model_config)
     search = config["models"][model_name]["search"]
     pipeline = Pipeline(
@@ -39,7 +47,7 @@ def tune_model(
         n_splits=config["split"]["cv_n_splits"], shuffle=True, random_state=config["split"]["random_state"]
     )
     method = search_method or config["tuning"]["default_method"]
-    common = {"scoring": config["tuning"]["scoring"], "cv": cv, "n_jobs": -1, "refit": True}
+    common = {"scoring": config["tuning"]["scoring"], "cv": cv, "n_jobs": n_jobs, "refit": True}
     if method == "grid":
         searcher = GridSearchCV(pipeline, param_grid=param_grid, **common)
     elif method == "randomized":
@@ -57,4 +65,7 @@ def tune_model(
         # 학습(fit)에만 반영되고, GridSearchCV가 하이퍼파라미터를 고르는 검증 fold 채점(scoring)에는
         # 적용되지 않는다 〔AI 제안 · 사람 검토 필요 — 이 항목은 아직 팀이 확정하지 않음, 2026-08-18〕.
         fit_params["model__sample_weight"] = sample_weight_train
-    return searcher.fit(X_train, y_train, **fit_params)
+    if parallel_backend_name is None:
+        return searcher.fit(X_train, y_train, **fit_params)
+    with parallel_backend(parallel_backend_name):
+        return searcher.fit(X_train, y_train, **fit_params)

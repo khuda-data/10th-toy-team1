@@ -2,14 +2,27 @@
 
 from .bootstrap import bootstrap_confidence_intervals
 from .data_checks import summarize_global_modeling_inputs
-from .evaluate import evaluate_model
+from .evaluate import calculate_binary_metrics, evaluate_model
+from .feature_analysis import (
+    CVFeatureAnalysisResult,
+    build_feature_selection_summary,
+    calculate_numeric_vif,
+    numeric_correlation_analysis,
+    run_cv_feature_analysis,
+)
 from .importance import calculate_feature_importance
 from .oof import generate_oof_predictions
 
 __all__ = [
     "bootstrap_confidence_intervals",
     "calculate_feature_importance",
+    "CVFeatureAnalysisResult",
+    "build_feature_selection_summary",
+    "calculate_numeric_vif",
+    "calculate_binary_metrics",
     "evaluate_model",
     "generate_oof_predictions",
+    "numeric_correlation_analysis",
+    "run_cv_feature_analysis",
     "summarize_global_modeling_inputs",
 ]

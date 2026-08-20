@@ -78,6 +78,7 @@
 
 - 사람이 선택한 Feature만으로 Logistic Regression과 XGBoost를 같은 CV 조건에서 다시 학습한다.
 - 1차(42 Feature)와 2차(선택 Feature)의 CV 성능을 같은 표와 그래프에서 비교한다.
+- 2026-08-21 사람 확정 입력은 `code/config/features.yaml`의 `feature_sets.global_stage2_selected_25` 25개다. 이 목록은 `YP2021_Stage2_42features_최종_선정표.xlsx`의 사용 목록을 그대로 옮긴 것이며 코드가 추가·제거하지 않는다.
 
 **사람 판단 지점**
 
@@ -124,6 +125,7 @@
 | 구간 | 내용을 정한 주체 | 사람 검토 |
 |---|---|---|
 | §1~§4의 단계·역할 분리·사람 판단 순서 | **사람(Kim ByungKyu)이 직접 지시** — “모델링 작업은 한 번에 작업을 진행하지 않고 전체 구조에 나와있는 것처럼 각 단계별로 사람의 판단을 하고 나서 다음 단계로 넘어간다.” | ✅ 2026-08-20 Kim ByungKyu |
+| §3 Stage 2 선택 Feature 25개 | **사람(Kim ByungKyu)이 제공한 `YP2021_Stage2_42features_최종_선정표.xlsx`의 사용 목록** | ✅ 2026-08-21 Kim ByungKyu |
 | 저장소 경로 연결·재현성 기록 형식 | AI가 저장소 규칙에 맞춰 구조화 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260820-Global-모델링-단계별-프로토콜.md`

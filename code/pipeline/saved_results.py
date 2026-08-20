@@ -51,3 +51,31 @@ def load_saved_global_train_test(
     if overlap:
         raise RuntimeError("고정 Train/Test split에 겹치는 SAMPID가 있습니다.")
     return train_bundle, test_bundle
+
+
+def load_saved_global_train(
+    dataset_path: str | Path,
+    split_path: str | Path,
+    feature_config: str | Path | dict,
+) -> DatasetBundle:
+    """고정 split에서 Train DatasetBundle만 반환한다. Test Dataset은 만들지 않는다."""
+    bundle = load_saved_global_dataset(dataset_path, feature_config)
+    split_ids = pd.read_csv(split_path, dtype={"SAMPID": "string"})
+    return select_split(bundle, split_ids, "train")
+
+
+def select_bundle_features(bundle: DatasetBundle, feature_names: list[str], *, name: str | None = None) -> DatasetBundle:
+    """기존 Train bundle에서 사람이 확정한 원 Feature 열만 순서대로 선택한다."""
+    missing = [feature for feature in feature_names if feature not in bundle.X.columns]
+    if missing:
+        raise ValueError(f"선택 Feature가 Global Train에 없습니다: {', '.join(missing)}")
+    if len(feature_names) != len(set(feature_names)):
+        raise ValueError("선택 Feature 목록에 중복이 있습니다.")
+    return DatasetBundle(
+        name=name or bundle.name,
+        X=bundle.X.loc[:, feature_names].copy(),
+        y=bundle.y.copy(),
+        groups=bundle.groups.copy(),
+        metadata=bundle.metadata.copy(),
+        sample_weight=bundle.sample_weight.copy(),
+    )

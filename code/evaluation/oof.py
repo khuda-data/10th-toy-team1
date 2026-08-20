@@ -22,14 +22,20 @@ def generate_oof_predictions(
     model_config: str | Path | dict,
     tune: bool = False,
     search_method: str | None = None,
+    params: dict | None = None,
     sample_weight_train: pd.Series | None = None,
+    parallel_backend_name: str | None = None,
+    n_jobs: int = -1,
 ) -> pd.DataFrame:
     """각 SAMPID 그룹을 한 번씩 검증 fold로 사용한 확률 예측을 반환한다.
 
-    `tune=True`이면 각 outer CV train fold 안에서 다시 `tune_model()`을 실행한다. 따라서
-    전처리와 튜닝 모두 검증 fold 정보에 fit되지 않는다.
+    `params`를 주면 매 validation fold에서 그 고정 파라미터로 학습한다. `tune=True`이면
+    각 outer CV train fold 안에서 다시 `tune_model()`을 실행한다. 둘은 함께 사용할 수 없다.
+    어느 경우든 전처리는 해당 CV Train fold에서만 fit된다.
     """
     config = load_model_config(model_config)
+    if tune and params is not None:
+        raise ValueError("OOF 생성에서 tune=True와 params는 함께 사용할 수 없습니다.")
     splitter = StratifiedGroupKFold(
         n_splits=config["split"]["cv_n_splits"],
         shuffle=config["split"]["shuffle"],
@@ -53,13 +59,14 @@ def generate_oof_predictions(
                 X.iloc[fit_index], y.iloc[fit_index], groups.iloc[fit_index],
                 model_name=model_name, feature_config=feature_config, model_config=config,
                 search_method=search_method, sample_weight_train=fold_weights,
+                parallel_backend_name=parallel_backend_name, n_jobs=n_jobs,
             )
             model = search.best_estimator_
         else:
             model = train_model(
                 X.iloc[fit_index], y.iloc[fit_index], groups.iloc[fit_index],
                 model_name=model_name, feature_config=feature_config, model_config=config,
-                sample_weight_train=fold_weights,
+                params=params, sample_weight_train=fold_weights,
             )
         probability[validation_index] = model.predict_proba(X.iloc[validation_index])[:, 1]
         folds[validation_index] = fold
