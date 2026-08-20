@@ -35,11 +35,9 @@ def build_estimator(model_name: str, model_config: str | Path | dict, params: di
     if model_name == "random_forest":
         return RandomForestClassifier(**kwargs)
     if model_name == "xgboost":
-        try:
-            from xgboost import XGBClassifier
-        except ImportError as error:
-            raise ImportError("XGBoost를 사용하려면 code/requirements.txt의 xgboost를 설치하세요.") from error
-        return XGBClassifier(**kwargs)
+        from code.model.xgboost import FoldAwareXGBClassifier
+
+        return FoldAwareXGBClassifier(**kwargs)
     if model_name == "lightgbm":
         try:
             from lightgbm import LGBMClassifier

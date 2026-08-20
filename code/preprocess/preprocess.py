@@ -25,10 +25,12 @@ class RareCategoryGrouper(BaseEstimator, TransformerMixin):
         other_label: str = "Other",
         protected_categories: Iterable[str] = ("Missing", "NotApplicable"),
     ) -> None:
-        self.columns = list(columns)
+        # sklearn.clone()은 __init__ 인자를 변형하지 않고 그대로 속성에 보관해야 한다.
+        # list()로 새 객체를 만들면 GridSearchCV가 clone 단계에서 실패한다.
+        self.columns = columns
         self.min_frequency = min_frequency
         self.other_label = other_label
-        self.protected_categories = list(protected_categories)
+        self.protected_categories = protected_categories
 
     def fit(self, X: pd.DataFrame, y: object = None) -> "RareCategoryGrouper":
         frame = pd.DataFrame(X)

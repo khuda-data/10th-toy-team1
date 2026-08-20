@@ -26,17 +26,14 @@ def tune_model(
     """GridSearchCV(기본) 또는 팀 공통 RandomizedSearchCV를 Train 내부 CV로 실행한다."""
     config = load_model_config(model_config)
     search = config["models"][model_name]["search"]
-    if any("train_negative_positive_ratio" in values for values in search.values()):
-        raise NotImplementedError(
-            "XGBoost의 scale_pos_weight는 각 CV Train fold에서 계산해야 합니다. "
-            "전체 Train 비율을 재사용하면 프로토콜을 어기므로, fold-aware 구현을 추가한 뒤 실행하세요."
-        )
     pipeline = Pipeline(
         [
             ("preprocessor", build_preprocessor(X_train, feature_config, model_name=model_name)),
             ("model", build_estimator(model_name, config)),
         ]
     )
+    # XGBoost의 `train_negative_positive_ratio` marker는 estimator.fit()에서 각 CV Train fold의
+    # y만 보고 숫자로 바뀐다. 전체 Train 비율을 모든 fold에 재사용하지 않는다.
     param_grid = {f"model__{name}": values for name, values in search.items()}
     cv = StratifiedGroupKFold(
         n_splits=config["split"]["cv_n_splits"], shuffle=True, random_state=config["split"]["random_state"]
