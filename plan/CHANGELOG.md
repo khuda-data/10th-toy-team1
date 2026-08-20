@@ -4,6 +4,95 @@
 
 ---
 
+## 2026-08-21 — Global Stage 3.5 제한 Hyperparameter Refinement·OOF threshold sensitivity 실행
+
+### 사람 확정 입력
+
+- Stage 3 `selected_features.csv`의 25개 Feature를 그대로 고정하고, 고정 Global Train·SAMPID 5-fold·F1·threshold 0.5·Train-fold-only 전처리를 유지한다.
+- Test Dataset·Test SAMPID·Test 지표는 사용하지 않는다. LR 28개 조합과 XGBoost A(81)→B(27)→C(9) 제한 Grid를 한 번만 실행하며 탐색 범위를 자동 확장하지 않는다.
+- refined Train OOF threshold sensitivity는 정보를 제공할 뿐, 모델이나 threshold를 자동 선택하지 않는다.
+
+### 만든 것·실행 결과
+
+- `code/model/final_tuning.py`와 `code/evaluation/threshold.py`, `notebooks/global/03_5_final_tuning.ipynb`를 추가했다. Stage 3.5 산출물은 기존 Stage 3을 덮어쓰지 않고 `data/result/baseline_42features/modeling/stage_3_5/`에 저장한다.
+- 실제 Global Train 11,925 Person-Period·5,737 SAMPID·25개 Feature에서 핵심 725 CV fits를 실행했다. Stage 3 artifact의 기준 파라미터는 요청서와 일치했다.
+- 실행 산출물의 수치와 boundary 표는 Notebook/CSV에서 제공한다. 최종 모델·threshold 선택과 수치의 연구적 해석은 사람이 직접 기록한다.
+
+### 사람 판단 필요
+
+- Stage 3 vs 3.5의 CV/OOF/fold/threshold 표를 확인해 Stage 4에 올릴 후보와 threshold 운영 방침을 사람이 결정·기록한다.
+
+---
+
+## 2026-08-21 — Global Stage 3 선택 25개 Feature 재튜닝·1차/2차 비교 구현
+
+### 사람 확정 입력
+
+- `YP2021_Stage2_42features_최종_선정표.xlsx`의 사용 25개 Feature를 `features.yaml`의 `global_stage2_selected_25`에 순서까지 그대로 등록했다. 코드가 목록을 추가·제거하지 않는다.
+
+### 만든 것
+
+- 기존 Stage 1 학습·GridSearchCV·OOF 로직을 `run_global_cv_modeling()`으로 분리해 Feature 수와 무관하게 재사용하도록 했다. Stage 1의 42개 검증 함수는 그대로 유지한다.
+- `notebooks/global/03_second_model.ipynb`에서 선택 25개 Feature로 LR/XGBoost를 새로 튜닝하고, 저장된 Stage 1 summary·OOF·fold F1과 비교표·지정 시각화를 만든다.
+- Stage별 artifact에 OOF, summary, best parameter, fold F1을 함께 저장하고 Stage 3 산출물은 `modeling/stage_3/`에 분리했다.
+
+### 고정 조건
+
+- Stage 3은 고정 Global Train과 SAMPID 5-fold CV만 사용한다. Test Dataset, `n_prior_periods`, `sample_weight`는 사용하지 않는다.
+- 모델·random_state·F1 scoring·threshold=0.5·전처리 원칙·LR/XGBoost 탐색 범위는 Stage 1과 동일하다. Feature set이 달라 1차 best parameter는 재사용하지 않는다.
+
+### 확인
+
+- 실제 Global Train의 400 SAMPID/886행 축소 표본에서 25개 Feature 선택, LR·XGBoost 독립 GridSearchCV, 5-fold OOF 생성 경로를 확인했다. Test는 읽지 않았다.
+- Stage 1~3 Notebook의 JSON·Python 셀 컴파일을 확인했다.
+
+### 사람 판단 필요
+
+- Stage 3 Notebook의 비교표·그래프를 보고 Stage 4 고정 Test 평가 후보를 사람이 직접 결정·기록한다.
+
+---
+
+## 2026-08-20 — Global Stage 2 Train 내부 Feature 분석 구현
+
+### 만든 것
+
+- Stage 1의 고정 최적 파라미터를 저장·복원하는 artifact 함수를 추가했다. 따라서 Stage 2는 GridSearchCV를 다시 실행하지 않고 Stage 1 파라미터로 분석한다.
+- `notebooks/global/02_feature_selection.ipynb`와 재사용 모듈을 추가했다. 각 LR/XGBoost 모델에서 SAMPID 5-fold validation의 원 Feature F1 Permutation Importance, LR coefficient magnitude, XGBoost gain/weight, 수치형 Pearson/Spearman 상관관계, 다값 수치형 VIF, 42개 Feature 종합표를 만든다.
+
+### 고정 조건
+
+- Global Train과 Train 내부 CV만 사용한다. Test Dataset, `n_prior_periods`, `sample_weight`, Feature 자동 삭제·추천·최종 목록 생성은 사용하지 않는다.
+- VIF는 One-Hot 범주형과 이진/저변동 수치형을 제외한 다값 수치형 원 Feature에만 계산한다. 상관 pair의 0.70 표시는 표를 줄이기 위한 표시 기준이며 삭제 규칙이 아니다.
+
+### 확인
+
+- 실제 Global Train의 400 SAMPID/886행 축소 표본에서 LR·XGBoost 5-fold, Feature별 2회 permutation으로 원 Feature 42개 집계, coefficient/gain, 상관·VIF·종합표 생성을 확인했다. Test는 읽지 않았다.
+- 새 Notebook의 JSON과 모든 Python 셀을 컴파일했고, Stage 1 artifact 저장·복원 단위 점검을 통과했다.
+
+### 사람 판단 필요
+
+- 42개 Feature 중 어떤 Feature를 2차 모델에 사용할지와 그 근거는 Notebook 결과를 본 사람이 직접 결정·기록한다.
+
+---
+
+## 2026-08-20 — Global Stage 1 Train 내부 LR·XGBoost 비교 구현
+
+### 만든 것
+
+- `baseline_42features`의 고정 Global Train만 읽어 공식 두 모델의 GridSearchCV, best CV F1·fold F1, 고정 최적 파라미터 OOF 확률과 OOF 지표를 만드는 재사용 함수를 추가했다.
+- `notebooks/global/01_first_model.ipynb`에서 비교표, CV F1·fold F1·Precision/Recall/F1, 모델별 OOF 혼동행렬, ROC·Precision-Recall 곡선을 표시하고 OOF parquet을 저장하도록 했다.
+
+### 고정 조건
+
+- Test Dataset, `n_prior_periods`, `sample_weight`, SMOTE·over/undersampling은 사용하지 않는다. CV는 SAMPID 기준 `StratifiedGroupKFold` 5-fold, random_state=42, scoring=F1, threshold=0.5이며 전처리는 각 CV Train fold에서만 fit한다.
+- XGBoost의 `scale_pos_weight` marker는 각 CV Train fold의 negative/positive 비율로 변환한다.
+
+### 확인
+
+- 실제 Global Train 11,925행·42개 Feature에서 축소 탐색으로 LR·XGBoost의 CV·OOF 경로를 검증했다. 각 모델에서 5개 fold 점수와 11,925개 OOF 예측을 생성했다. Notebook의 모든 Python 셀은 컴파일했다.
+
+---
+
 ## 2026-08-20 — Global/Local 공식 모델 범위와 Stage 0 split 감사
 
 ### 바꾼 것
@@ -443,5 +532,6 @@
 | 구간 | 내용을 정한 주체 | 사람 검토 |
 |---|---|---|
 | 2026-08-12 개발·검증 일정 및 직무별 모델링 방식 | **사람(hanliyagi)이 직접 제공한 회의 결정** | ✅ 2026-08-12 hanliyagi |
+| 2026-08-21 Global Stage 3.5 제한 refinement·OOF threshold sensitivity 범위 | **사람(Kim ByungKyu)이 직접 제공한 Stage 3.5 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 근거 회의록: `회의기록/20260812-프로젝트-진행계획-논의.md`

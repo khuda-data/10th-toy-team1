@@ -48,6 +48,23 @@ def feature_columns_by_type(
     ]
 
 
+def named_feature_set(feature_config: str | Path | dict, feature_set_name: str) -> list[str]:
+    """설정에 등록한 사람이 확정한 원 Feature 집합을 순서대로 반환한다."""
+    config = load_feature_config(feature_config)
+    feature_sets = config.get("feature_sets", {})
+    if feature_set_name not in feature_sets:
+        raise KeyError(f"features.yaml에 등록되지 않은 Feature set입니다: {feature_set_name}")
+    selected = list(feature_sets[feature_set_name])
+    all_features = set(feature_columns(config))
+    unknown = [feature for feature in selected if feature not in all_features]
+    duplicate = [feature for feature in selected if selected.count(feature) > 1]
+    if unknown:
+        raise ValueError(f"Feature set에 기본 42개 Feature가 아닌 이름이 있습니다: {', '.join(unknown)}")
+    if duplicate:
+        raise ValueError(f"Feature set에 중복된 Feature가 있습니다: {', '.join(sorted(set(duplicate)))}")
+    return selected
+
+
 def build_features(
     frame: pd.DataFrame,
     feature_config: str | Path | dict,

@@ -32,6 +32,8 @@
           ↓
 [3] 2차 모델 (선택 Feature) → 1차 vs 2차 CV 비교 → 사람의 후보 판단
           ↓
+[3.5] 제한 Hyperparameter Refinement (선택 25 Feature 고정) → OOF threshold sensitivity → 사람 판단
+          ↓
 [4] 고정 Test 최종 비교 → 진단 그래프·Bootstrap CI → 사람의 최종 Global 모델 판단
 ```
 
@@ -78,11 +80,25 @@
 
 - 사람이 선택한 Feature만으로 Logistic Regression과 XGBoost를 같은 CV 조건에서 다시 학습한다.
 - 1차(42 Feature)와 2차(선택 Feature)의 CV 성능을 같은 표와 그래프에서 비교한다.
+- 2026-08-21 사람 확정 입력은 `code/config/features.yaml`의 `feature_sets.global_stage2_selected_25` 25개다. 이 목록은 `YP2021_Stage2_42features_최종_선정표.xlsx`의 사용 목록을 그대로 옮긴 것이며 코드가 추가·제거하지 않는다.
 
 **사람 판단 지점**
 
 - 성능, 안정성, 단순성 등을 직접 보고 Stage 4에 올릴 최종 후보를 판단한다.
 - 이 판단 뒤에는 Feature 집합과 후보 모델을 고정한다.
+
+### [3.5] Final Hyperparameter Refinement — 선택 25 Feature 고정
+
+**실행**
+
+- Stage 3 `selected_features.csv`의 사람이 확정한 25개 Feature와 저장된 Stage 3 최적 파라미터를 기준선으로 보존한다.
+- Test를 열지 않고 동일한 Global Train·SAMPID 5-fold·F1·threshold 0.5·Train-fold-only 전처리에서 LR 제한 Grid와 XGBoost A→B→C 제한 Grid를 한 번만 탐색한다.
+- refined 모델의 Train OOF 확률로 threshold 0.20~0.80 민감도를 계산한다. 이 표는 threshold를 자동으로 바꾸지 않는다.
+
+**사람 판단 지점**
+
+- Stage 3 대비 CV/OOF·fold 안정성·Precision/Recall 변화와 threshold 민감도를 보고, Stage 4에 올릴 후보 및 threshold 정책을 직접 결정·기록한다.
+- 이 단계의 결과를 보고 탐색 범위를 자동 확장하거나 Feature를 다시 선택하지 않는다. 새 탐색이 필요하면 별도 실험으로 기록한다.
 
 ### [4] 최종 Test 성능 비교
 
@@ -124,6 +140,8 @@
 | 구간 | 내용을 정한 주체 | 사람 검토 |
 |---|---|---|
 | §1~§4의 단계·역할 분리·사람 판단 순서 | **사람(Kim ByungKyu)이 직접 지시** — “모델링 작업은 한 번에 작업을 진행하지 않고 전체 구조에 나와있는 것처럼 각 단계별로 사람의 판단을 하고 나서 다음 단계로 넘어간다.” | ✅ 2026-08-20 Kim ByungKyu |
+| §3 Stage 2 선택 Feature 25개 | **사람(Kim ByungKyu)이 제공한 `YP2021_Stage2_42features_최종_선정표.xlsx`의 사용 목록** | ✅ 2026-08-21 Kim ByungKyu |
+| §3 Stage 3.5 제한 refinement·OOF threshold sensitivity 범위 | **사람(Kim ByungKyu)이 직접 제공한 Stage 3.5 요청** | ✅ 2026-08-21 Kim ByungKyu |
 | 저장소 경로 연결·재현성 기록 형식 | AI가 저장소 규칙에 맞춰 구조화 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260820-Global-모델링-단계별-프로토콜.md`

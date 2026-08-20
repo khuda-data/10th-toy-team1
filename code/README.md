@@ -48,6 +48,14 @@ python -m code.pipeline.run_pipeline \
 
 Stage 0 데이터·split 확인은 [`../notebooks/global/00_modeling_check.ipynb`](../notebooks/global/00_modeling_check.ipynb)에서 한다. 이 Notebook은 저장된 42개 Feature Global Dataset을 읽어 표본·SAMPID 중복·Target·baseline_year·결측률만 확인하며 모델을 학습하거나 결과를 해석하지 않는다.
 
+Stage 1은 [`../notebooks/global/01_first_model.ipynb`](../notebooks/global/01_first_model.ipynb)에서 한다. 이 Notebook은 `baseline_42features`의 고정 Train만 읽어 Logistic Regression·XGBoost의 5-fold F1, OOF 지표와 그래프를 만들고 OOF 확률을 저장한다. 고정 Test Dataset·`n_prior_periods`·`sample_weight`는 사용하지 않는다.
+
+Stage 2는 [`../notebooks/global/02_feature_selection.ipynb`](../notebooks/global/02_feature_selection.ipynb)에서 한다. Stage 1이 저장한 최적 파라미터를 재사용해 GridSearch를 다시 수행하지 않고, Global Train 내부에서 CV Permutation Importance·계수/gain 보조 자료·수치형 상관관계·VIF를 계산한다. 이 단계는 Feature 삭제·추천·최종 목록 생성이나 Test Dataset 사용을 하지 않는다.
+
+Stage 3는 [`../notebooks/global/03_second_model.ipynb`](../notebooks/global/03_second_model.ipynb)에서 한다. 사람이 확정한 `features.yaml`의 `global_stage2_selected_25`만 선택한 뒤, 기존의 공통 Global CV 함수로 LR/XGBoost를 처음부터 다시 튜닝한다. Stage 1의 최적 파라미터는 재사용하지 않으며, 저장된 Stage 1 결과와 Train 내부 CV·OOF 수치만 비교한다.
+
+Stage 3.5는 [`../notebooks/global/03_5_final_tuning.ipynb`](../notebooks/global/03_5_final_tuning.ipynb)에서 한다. `stage_3/selected_features.csv`의 사람이 확정한 25개를 그대로 사용하고, `model_config.yaml`의 `final_hyperparameter_refinement`에 정한 LR 28개 및 XGBoost A→B→C 제한 Grid만 한 번 탐색한다. Test를 읽지 않으며, refined Train OOF의 threshold 0.20~0.80 민감도는 선택 정보로만 저장하고 자동 채택하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
@@ -58,6 +66,10 @@ Stage 0 데이터·split 확인은 [`../notebooks/global/00_modeling_check.ipynb
 | 구조·실행 안내 | AI가 공통 코드 뼈대를 설명 | ⬜ 미검토 |
 | Person-Period·분할·전처리·평가 기준 | **사용자 제공 YP2021 공통 전처리·모델링 프로토콜 v1.3** | ✅ 2026-08-14 검토 완료 |
 | Global·Local 공식 LR/XGBoost 비교 대상과 Global 단계별 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 1 42개 Feature Train 내부 비교·OOF 보관 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 2 Train 내부 Feature 분석·사람의 Feature 선택 경계 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 3 선택 25개 Feature·재튜닝·1차/2차 비교 조건 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
+| Stage 3.5 제한 refinement·OOF threshold 민감도·Test 미사용 경계 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 | OOF·bootstrap·저장 Dataset/split 점검·Stage 0 Notebook | 사용자 제공 모델링 준비 요구사항을 AI가 구현 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

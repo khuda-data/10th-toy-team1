@@ -72,6 +72,7 @@ def bootstrap_confidence_intervals(
         {
             "metric": bootstrap_metrics.columns,
             "estimate": [point_estimate[metric] for metric in bootstrap_metrics.columns],
+            "bootstrap_mean": bootstrap_metrics.mean().to_numpy(),
             "ci95_lower": bootstrap_metrics.quantile(0.025).to_numpy(),
             "ci95_upper": bootstrap_metrics.quantile(0.975).to_numpy(),
             "n_valid_repeats": len(bootstrap_metrics),
@@ -79,4 +80,54 @@ def bootstrap_confidence_intervals(
             "bootstrap_unit": "SAMPID",
             "threshold": threshold,
         }
+    )
+
+
+def paired_bootstrap_f1_difference(
+    y_true: pd.Series | np.ndarray,
+    probability_a: pd.Series | np.ndarray,
+    probability_b: pd.Series | np.ndarray,
+    groups: pd.Series | np.ndarray,
+    *,
+    threshold: float = 0.5,
+    n_repeats: int = 1000,
+    random_state: int = 42,
+    comparison: str | None = None,
+) -> pd.DataFrame:
+    """같은 SAMPID 복원표본에서 두 모델의 F1(A-B) 차이 95% CI를 계산한다."""
+    y = np.asarray(y_true, dtype="int8")
+    scores_a = np.asarray(probability_a, dtype="float64")
+    scores_b = np.asarray(probability_b, dtype="float64")
+    group_values = pd.Series(groups, copy=False).astype("string")
+    if not (len(y) == len(scores_a) == len(scores_b) == len(group_values)):
+        raise ValueError("paired bootstrap 입력의 길이는 모두 같아야 합니다.")
+    if group_values.isna().any() or group_values.nunique() < 2:
+        raise ValueError("paired bootstrap에는 결측 없는 SAMPID가 2개 이상 필요합니다.")
+    if n_repeats < 1 or not 0 < threshold < 1:
+        raise ValueError("n_repeats와 threshold 범위를 확인하세요.")
+
+    unique_groups = group_values.unique().to_numpy()
+    group_array = group_values.to_numpy()
+    row_indices = {group: np.flatnonzero(group_array == group) for group in unique_groups}
+    rng = np.random.default_rng(random_state)
+    deltas = []
+    for _ in range(n_repeats):
+        sampled_groups = rng.choice(unique_groups, size=len(unique_groups), replace=True)
+        sampled_rows = np.concatenate([row_indices[group] for group in sampled_groups])
+        f1_a = f1_score(y[sampled_rows], scores_a[sampled_rows] >= threshold, zero_division=0)
+        f1_b = f1_score(y[sampled_rows], scores_b[sampled_rows] >= threshold, zero_division=0)
+        deltas.append(float(f1_a - f1_b))
+    point = f1_score(y, scores_a >= threshold, zero_division=0) - f1_score(y, scores_b >= threshold, zero_division=0)
+    values = np.asarray(deltas, dtype="float64")
+    return pd.DataFrame(
+        [{
+            "comparison": comparison or "model_a - model_b",
+            "point_estimate_delta_f1": point,
+            "bootstrap_mean_delta": float(values.mean()),
+            "ci95_lower": float(np.quantile(values, 0.025)),
+            "ci95_upper": float(np.quantile(values, 0.975)),
+            "n_repeats": n_repeats,
+            "bootstrap_unit": "SAMPID",
+            "threshold": threshold,
+        }]
     )

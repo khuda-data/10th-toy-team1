@@ -26,6 +26,13 @@
 | `feature_importance/feature_importance.csv` | 원 Feature 단위 Permutation Importance | 필요 시 공용 결과물로 커밋 |
 | `models/best_params.json` | CV가 고른 공통 파라미터 | 필요 시 공용 결과물로 커밋 |
 | `models/*.joblib` | 학습된 모델 객체 | ignore |
+| `modeling/stage_1/<model>_oof_predictions.parquet` | Global Stage 1 Train 내부 OOF 확률·fold·SAMPID | ignore |
+| `modeling/stage_1/first_stage_summary.csv`, `best_params.json` | Stage 1 비교표와 Stage 2 재사용용 최적 파라미터 | ignore |
+| `modeling/stage_1/fold_f1.json` | Stage 1 모델별 5개 CV fold F1 | ignore |
+| `modeling/stage_2/*.csv` | Global Train 내부 Feature 분석표·상관·VIF·종합표 | ignore |
+| `modeling/stage_3/<model>_oof_predictions.parquet`, `second_stage_summary.csv`, `best_params.json`, `fold_f1.json`, `selected_features.csv` | Global Stage 3의 25개 Feature CV·OOF·파라미터·선택 목록 | ignore |
+| `modeling/stage_3_5/final_tuning_summary.csv`, `lr_refinement_results.csv`, `xgb_refinement_stage_[a-c].csv`, `final_refined_params.json`, `final_fold_f1.json` | Global Stage 3 vs 3.5 비교와 제한 refinement 전체 결과 | ignore |
+| `modeling/stage_3_5/threshold_*.csv`, `refined_<model>_oof_predictions.parquet` | refined Train OOF threshold 민감도와 0.5 기준 OOF 예측 | ignore |
 
 파일별 컬럼·타입은 [`../../plan/details/06-인터페이스.md`](../../plan/details/06-인터페이스.md)가 정본이다.
 
@@ -62,5 +69,9 @@ python -m code.pipeline.run_pipeline \
 | 실험별 경로·생성 파일 | PR #5 코드 계약을 AI가 문서화 | ⬜ 미검토 |
 | 공개 저장소 보관 규칙 | 기존 저장소 규칙을 AI가 새 경로에 적용 | ⬜ 미검토 |
 | 세 실험 실행 명령 | PR #5 CLI 동작을 AI가 문서화 | ⬜ 미검토 |
+| `modeling/stage_1/` Train OOF 보관 경로 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 1차 모델링 조건** | ✅ 2026-08-20 Kim ByungKyu |
+| `modeling/stage_2/` Train 내부 Feature 분석 보관 경로 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 요청** | ✅ 2026-08-20 Kim ByungKyu |
+| Stage 3 25개 Feature 재튜닝 산출물 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
+| Stage 3.5 제한 refinement·Train OOF threshold 산출물 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-21 요청** | ✅ 2026-08-21 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260819-PR5-충돌해결-결과경로-정리.md`
