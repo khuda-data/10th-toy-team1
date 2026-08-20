@@ -44,7 +44,7 @@ python -m code.pipeline.run_pipeline \
 
 `--tune`은 Train 내부 `StratifiedGroupKFold`만 이용해 공통 탐색 범위를 실행한다. 계산량 때문에 Randomized Search가 필요하면 팀 공통 결정을 먼저 반영한다.
 
-현재 Global 모델의 실제 실행 순서는 [14번 단계별 실행 흐름](../plan/details/14-Global-모델링-단계별-실행흐름.md)을 따른다. 공통 모듈은 다섯 모델을 지원하지만, 이번 Global 1차·2차 비교에서는 Logistic Regression과 XGBoost만 실행하며 사람이 단계 사이의 선택을 기록한다.
+공통 모듈은 다섯 모델을 지원하지만, Global과 Local의 공식 비교에는 `model_config.yaml`의 `official_comparison_models`에 등록된 Logistic Regression과 XGBoost만 사용한다. Global의 실제 실행 순서는 [14번 단계별 실행 흐름](../plan/details/14-Global-모델링-단계별-실행흐름.md)을 따르며, 사람은 단계 사이의 선택을 기록한다.
 
 Stage 0 데이터·split 확인은 [`../notebooks/global/00_modeling_check.ipynb`](../notebooks/global/00_modeling_check.ipynb)에서 한다. 이 Notebook은 저장된 42개 Feature Global Dataset을 읽어 표본·SAMPID 중복·Target·baseline_year·결측률만 확인하며 모델을 학습하거나 결과를 해석하지 않는다.
 
@@ -57,7 +57,7 @@ Stage 0 데이터·split 확인은 [`../notebooks/global/00_modeling_check.ipynb
 |---|---|---|
 | 구조·실행 안내 | AI가 공통 코드 뼈대를 설명 | ⬜ 미검토 |
 | Person-Period·분할·전처리·평가 기준 | **사용자 제공 YP2021 공통 전처리·모델링 프로토콜 v1.3** | ✅ 2026-08-14 검토 완료 |
-| Global 단계별 LR/XGBoost 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
+| Global·Local 공식 LR/XGBoost 비교 대상과 Global 단계별 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
 | OOF·bootstrap·저장 Dataset/split 점검·Stage 0 Notebook | 사용자 제공 모델링 준비 요구사항을 AI가 구현 | ⬜ 미검토 |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

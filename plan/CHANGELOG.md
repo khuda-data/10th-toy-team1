@@ -4,11 +4,28 @@
 
 ---
 
+## 2026-08-20 — Global/Local 공식 모델 범위와 Stage 0 split 감사
+
+### 바꾼 것
+
+- Global과 Local의 공식 비교 모델을 모두 Logistic Regression·XGBoost로 명시하고, 설정 정본 키를 `official_comparison_models`로 통일했다. Decision Tree·Random Forest·LightGBM 구현·설정은 기존 코드 호환성을 위해 유지한다.
+- PR #6의 문서상 행 수와 Stage 0 행 수 차이를 감사했다. 보관된 `data/result/splits/split_ids.csv`와 `baseline_42features/splits/split_ids.csv`는 SHA-256 및 모든 SAMPID 배정이 같고, 두 Global Dataset의 Person-Period 키도 같다. 저장 split을 적용하거나 메모리에서 재계산한 결과는 모두 Train 11,925행 / Test 2,981행이다.
+
+### 확인
+
+- 수정 뒤 Stage 0 Notebook을 실제 baseline 42개 Feature Dataset에서 재실행했다. Train 11,925행 / 5,737 SAMPID, Test 2,981행 / 1,406 SAMPID, overlap 0, 42개 Feature 누락 0을 확인했다.
+
+### 남은 것
+
+- PR #6 작업기록에만 있는 Train 12,012행 / Test 2,894행은 보관된 원자료 zip·당시 콘솔 출력이 없어 재현되지 않는다. split은 교체하지 않았으며, 과거 작업기록 정정 여부는 작성자 또는 팀이 결정한다.
+
+---
+
 ## 2026-08-20 — Global 모델 Stage 0 공용 기능·Notebook 준비
 
 ### 만든 것
 
-- 공식 Global 비교 대상을 Logistic Regression과 XGBoost로 `model_config.yaml`과 공통 프로토콜에 명시했다. Decision Tree·Random Forest·LightGBM의 기존 구현과 설정은 호환성을 위해 유지한다.
+- 공식 Global·Local 비교 대상을 Logistic Regression과 XGBoost로 `model_config.yaml`과 공통 프로토콜에 명시했다. Decision Tree·Random Forest·LightGBM의 기존 구현과 설정은 호환성을 위해 유지한다.
 - XGBoost의 `scale_pos_weight=train_negative_positive_ratio` 후보가 전체 Train 비율이 아니라 매 CV Train fold의 negative/positive 비율을 사용하도록 구현했다.
 - Train 내부 OOF 예측, SAMPID 단위 bootstrap 1,000회 95% CI, 저장 Global Dataset·split 로더, Stage 0 점검표 기능을 `code/`에 추가했다.
 - `notebooks/global/00_modeling_check.ipynb`에서 실제 baseline 42개 Feature Global Dataset의 표본·SAMPID·Target·baseline_year·Feature 존재·결측률과 세 확인 그래프를 만들 수 있게 했다.
