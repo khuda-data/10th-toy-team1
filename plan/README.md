@@ -53,6 +53,7 @@ UXC 연구실 `알림 수신 모드/논문` 폴더(`Agentnotif_app/plan/`, `선�
 │       ├── 11-YP2021-공통-전처리-모델링-프로토콜.md ← ★ v1.3 공통 분석·분할·평가 고정 기준
 │       ├── 12-Global-피처엔지니어링-요약.md ← Global Feature 구현·검증 요약
 │       ├── 13-YP2021-PersonPeriod-전처리-설계안.md ← Person-Period 전처리·42개 Feature 처리 설계
+│       ├── 14-Global-모델링-단계별-실행흐름.md ← Global 단계별 모델링·사람 판단 절차
 │       └── assets/                ← details 문서의 그림
 ├── design/                        ← DESIGN-apple.md(시각 산출물 전부) · DESIGN-notion.md(해설 전용)
 ├── 논문/                          ← 논문 1편당 전용 폴더 (원본 PDF + 해설 HTML/md + assets)

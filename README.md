@@ -52,6 +52,7 @@
 | [`plan/details/11-YP2021-공통-전처리-모델링-프로토콜.md`](plan/details/11-YP2021-공통-전처리-모델링-프로토콜.md) | **공통 전처리·모델링 프로토콜 v1.3** — 기준연도 미취업자 전체 대상·Feature·분할·모델·평가의 고정 기준 | 구현·실험 전 |
 | [`plan/details/12-Global-피처엔지니어링-요약.md`](plan/details/12-Global-피처엔지니어링-요약.md) | Global 모델 feature 31개 구현 코드 요약 — 뭘 만들었고, 확인 필요한 판단 지점이 뭔지 | 피처 엔지니어링 코드 리뷰할 때 |
 | [`plan/details/13-YP2021-PersonPeriod-전처리-설계안.md`](plan/details/13-YP2021-PersonPeriod-전처리-설계안.md) | Person-Period 3개 구간, 42개 Feature 그룹, 결측·과거 이력 처리 설계 | 전처리 구현·코드북 대조 전 |
+| [`plan/details/14-Global-모델링-단계별-실행흐름.md`](plan/details/14-Global-모델링-단계별-실행흐름.md) | **Global 모델 단계별 운영 절차** — LR/XGBoost 1차·Feature 선택·2차·최종 Test 사이의 사람 판단 경계 | Global 모델링을 시작하거나 다음 단계로 넘기기 전 |
 | [`설문/`](설문/README.md) | 실험용 설문지 — 취업 스트레스 척도 22문항 (배포용 hwp + 설명 md) + 원본 IRB 양식 | 사전·사후 설문을 돌리기 전 |
 | [`검색기록/`](검색기록/README.md) | 모든 검색의 기록 — 논문·데이터·라이브러리·기술, 검색어·후보·채택/제외 이유 (AI 자동 작성) | 무언가 찾기 전(중복 확인)·찾을 때 |
 | [`작업기록/`](작업기록/README.md) | AI 세션 로그 — 지침·답변·검증의 시간순 이력 (사람별 폴더) | 세션 시작 전(이어받기)·종료 시(기록) |

@@ -44,6 +44,8 @@ python -m code.pipeline.run_pipeline \
 
 `--tune`은 Train 내부 `StratifiedGroupKFold`만 이용해 공통 탐색 범위를 실행한다. 계산량 때문에 Randomized Search가 필요하면 팀 공통 결정을 먼저 반영한다.
 
+현재 Global 모델의 실제 실행 순서는 [14번 단계별 실행 흐름](../plan/details/14-Global-모델링-단계별-실행흐름.md)을 따른다. 공통 모듈은 다섯 모델을 지원하지만, 이번 Global 1차·2차 비교에서는 Logistic Regression과 XGBoost만 실행하며 사람이 단계 사이의 선택을 기록한다.
+
 ---
 ## 🖊 작성 출처
 
@@ -53,5 +55,6 @@ python -m code.pipeline.run_pipeline \
 |---|---|---|
 | 구조·실행 안내 | AI가 공통 코드 뼈대를 설명 | ⬜ 미검토 |
 | Person-Period·분할·전처리·평가 기준 | **사용자 제공 YP2021 공통 전처리·모델링 프로토콜 v1.3** | ✅ 2026-08-14 검토 완료 |
+| Global 단계별 LR/XGBoost 실행 순서 | **사람(Kim ByungKyu)이 직접 지시한 2026-08-20 모델링 흐름** | ✅ 2026-08-20 Kim ByungKyu |
 
 - 세션 로그: `작업기록/hanliyagi/20260814-yp2021-공통-파이프라인-뼈대.md`

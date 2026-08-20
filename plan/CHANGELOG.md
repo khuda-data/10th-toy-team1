@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-20 — Global 모델링을 사람 판단 단계로 분리
+
+### 정한 것
+
+- Global 모델은 한 번에 최종 결론을 내리지 않는다. ① 42개 Feature의 Logistic Regression/XGBoost 1차 CV, ② Train 내부 중요도·공선성 분석 뒤 사람의 Feature 선택, ③ 선택 Feature의 2차 CV와 사람의 후보 판단, ④ 네 후보(LR/XGB × 1차/2차)의 고정 Test 비교와 사람의 최종 판단 순서로 진행한다.
+- `.py`는 재사용 가능한 계산·학습·평가 기능, `.ipynb`는 실행·표·그래프·결과 관찰, 사람은 결과 해석·Feature 선택·최종 모델 판단을 맡는다.
+- Test는 Stage 4 전까지 Feature·모델 선택에 쓰지 않는다. Stage 4 결과를 본 뒤 선택을 바꾸려면 새 실험으로 Stage 1부터 다시 시작한다.
+
+### 기록 위치
+
+- 팀 공용 실행 절차: `plan/details/14-Global-모델링-단계별-실행흐름.md`
+
+---
+
 ## 2026-08-16 — build_person_period.py 브랜치 충돌 해결 + 13번 설계안 §2·§3 그룹별 결측 보완 구현
 
 ### 만든 것
