@@ -22,6 +22,8 @@ Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사�
 
 `strategy_tuning.py`는 Step 3 sensitivity B/C 전용 제한 GridSearch를 제공한다. B는 26개 Feature에서 Stage 3.5 범위의 LR 28개와 XGBoost A→B→C Grid를 사용한다. C는 25개 Feature에서 LR `class_weight`를 탐색하지 않고, 각 fit fold의 `sample_weight` mass로 동적 class correction을 계산한다. 이 opt-in 경로는 공식 Stage 1~4 기본 탐색을 바꾸지 않으며 Test를 받지 않는다.
 
+Step 4의 `evaluation/sensitivity_diagnostics.py`는 OOF subgroup metric, SAMPID 단위 paired bootstrap, validation-fold 원 Feature permutation importance만 제공한다. 모든 함수는 Test Dataset을 입력으로 받지 않는다.
+
 ---
 ## 🖊 작성 출처
 

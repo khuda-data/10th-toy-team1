@@ -32,6 +32,8 @@
 - Step 3 B Notebook의 Train loader가 `DatasetBundle`을 DataFrame용 `attach_person_period_column()`에 직접 전달하던 오류를 수정했다. 기존 Step 2 B와 동일하게 `base.to_frame()`에 `n_prior_periods`를 행 키로 연결한 뒤, 원래 y·SAMPID·metadata·sample weight를 유지하는 26 Feature `DatasetBundle`을 다시 만든다.
 - Jupyter의 loky process worker가 저장소 패키지명 `code`를 표준 라이브러리 `code`로 잘못 해석해 발생한 `BrokenProcessPool`을 피하도록, Step 3 B/C Notebook의 GridSearch 호출에 `parallel_backend_name="threading"`을 명시했다. `n_jobs=-1`과 XGBoost 내부 `n_jobs=1` 원칙은 유지한다.
 - Step 3 마지막 그래프에서 B/C locked OOF는 이미 메모리에 있는 DataFrame인데 이를 parquet 경로로 다시 읽으려 해 발생한 오류를 수정했다. 그래프 helper가 값이 `Path`/문자열일 때만 `read_parquet()`를 호출하고, DataFrame은 그대로 사용한다.
+- Step 4 요청에 따라 B/C diagnostics Notebook을 분리 생성했다. B는 `n_prior_periods` 분포·subgroup OOF·validation-fold 원 Feature PI·SAMPID paired bootstrap을, C는 SAMPID row-count subgroup·weighted correction audit·paired bootstrap을 준비한다. 두 Notebook은 A/locked/tuned Train artifact만 읽고 Test는 열지 않는다.
+- `code/evaluation/sensitivity_diagnostics.py`를 추가해 OOF 열 표준화, subgroup metric, SAMPID paired bootstrap, Train-fold fit/validation-fold permutation importance를 공용화했다. 합성 OOF로 bootstrap/subgroup 함수만 검증했고 실제 Global PI·bootstrap·Notebook은 실행하지 않았다.
 
 ## 검증 (내가 직접 확인한 것)
 
