@@ -16,6 +16,8 @@ Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사�
 
 `final_evaluation.py`는 Stage 1/3.5 artifact에서 네 고정 후보를 복원하고, Stage 4 Notebook 실행 시에만 Train 전체 fit·고정 Test 예측·결과 저장을 수행한다. Test 결과를 이용한 재튜닝·재선택 기능은 제공하지 않는다.
 
+`locked_sensitivity.py`는 Stage 3.5 `final_refined_params.json`의 LR/XGBoost parameter를 변경 없이 읽어 반복관측 sensitivity의 Train OOF를 만든다. 새 tuning과 Test 접근은 하지 않으며, C 방식의 `sample_weight`는 각 CV fold의 fit에만 전달하고 OOF 평가는 비가중으로 계산한다.
+
 ---
 ## 🖊 작성 출처
 

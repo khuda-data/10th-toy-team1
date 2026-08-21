@@ -16,6 +16,8 @@ Global 모델은 [14번 단계별 실행 흐름](../../plan/details/14-Global-�
 - `03_second_model.ipynb`는 사람이 확정한 `global_stage2_selected_25` 25개 Feature로 LR/XGBoost를 새로 튜닝하고, 저장된 Stage 1 결과와 CV·OOF 수치만 비교한다. Test 사용이나 최종 모델 선택은 하지 않는다.
 - `03_5_final_tuning.ipynb`는 Stage 3 `selected_features.csv`의 같은 25개 Feature와 저장된 Stage 3 파라미터를 기준선으로, 사람이 지정한 제한 LR/XGBoost refinement 및 refined Train OOF threshold 민감도를 실행한다. Test를 읽지 않고, 모델·threshold를 자동 선택하지 않는다.
 - `04_model_comparison.ipynb`는 사람이 직접 실행하는 최초 Global Test 평가용이다. 네 고정 후보의 Test 지표·SAMPID bootstrap·paired bootstrap·최종 25개 Feature PI를 만들며, 실행 뒤에는 Feature·파라미터·threshold를 바꾸지 않는다.
+- `05_1B_n_prior_periods_audit.ipynb`와 `05_1C_sample_weight_audit.ipynb`는 반복관측 sensitivity B/C의 Train 데이터 구조를 각각 점검한다. 모델 학습·CV·Test 접근은 하지 않는다.
+- `05_2B_n_prior_periods_locked_model.ipynb`와 `05_2C_sample_weight_locked_model.ipynb`는 Stage 3.5의 동결 파라미터로 각각 Train OOF를 만들고 A 결과와 비교한다. 새 hyperparameter tuning·Feature Selection·Test 접근은 하지 않는다.
 - 이후 Notebook도 `code/` 공용 함수를 import하며, Test를 Feature·모델 선택에 사용하지 않는다.
 
 ---
