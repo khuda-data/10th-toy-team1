@@ -25,6 +25,7 @@
 - `code/model/locked_sensitivity.py`에 C-revised 전용 opt-in helper를 추가했다. LR은 `W_total/(2*W_neg)`, `W_total/(2*W_pos)` dictionary로 기존 `class_weight="balanced"`를 대체하고, XGBoost는 `W_neg/W_pos`으로 기존 raw-row `scale_pos_weight`를 대체한다. 두 모델 모두 training fold fit에만 SAMPID sample weight를 전달하며, validation/OOF metric은 비가중으로 남긴다.
 - C-revised 전용 저장 경로와 summary·fold F1·weight audit·OOF·confusion matrix 파일 생성을 Notebook에 준비했다. 실제 Notebook, 실제 Global Train CV, OOF 생성, Test 접근은 실행하지 않았다.
 - C-revised 비교 셀에서 A `final_tuning_summary.csv`에 Stage 3와 Stage 3.5가 함께 있어 모델명이 중복되는 경우를 처리하도록 수정했다. A 비교 행은 명시적으로 `stage_3_5`만 선택하며, 중복이 남으면 오류를 내도록 했다.
+- C-old OOF artifact의 prediction 열이 `y_pred`인 것을 schema만 확인해, 비교 셀의 표준화 함수가 `y_pred`·`y_pred_at_0_5` 모두를 `y_predicted`로 맞추도록 보완했다. 지표·성능값은 계산하거나 확인하지 않았다.
 
 ## 검증 (내가 직접 확인한 것)
 
