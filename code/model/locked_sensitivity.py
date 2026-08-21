@@ -12,10 +12,12 @@ from pathlib import Path
 
 import pandas as pd
 from sklearn.metrics import f1_score
+from sklearn.model_selection import StratifiedGroupKFold
 
 from code.contracts import DatasetBundle
 from code.evaluation.evaluate import calculate_binary_metrics
 from code.evaluation.oof import generate_oof_predictions
+from code.model.train import load_model_config, train_model
 
 
 @dataclass(frozen=True)
@@ -160,3 +162,101 @@ def sensitivity_comparison_table(baseline: pd.DataFrame, results: list[LockedMod
         "strategy", "model", "feature_count", "cv_f1_mean", "cv_f1_std", "oof_precision", "oof_recall", "oof_f1", "oof_roc_auc"
     ]]
     return pd.concat([baseline, strategy], ignore_index=True).sort_values(["model", "strategy"]).reset_index(drop=True)
+
+
+def compute_weighted_class_mass(y: pd.Series, sample_weight: pd.Series) -> dict[str, float]:
+    """한 CV training fold의 raw count와 weighted positive/negative mass를 계산한다."""
+    target = pd.Series(y).reset_index(drop=True)
+    weights = pd.Series(sample_weight).reset_index(drop=True).astype("float64")
+    if len(target) != len(weights) or weights.isna().any() or weights.le(0).any():
+        raise ValueError("weighted class mass에는 y와 같은 길이의 양수 sample_weight가 필요합니다.")
+    if not target.isin([0, 1]).all():
+        raise ValueError("weighted class mass의 target은 0과 1만 포함해야 합니다.")
+    raw_pos, raw_neg = int(target.eq(1).sum()), int(target.eq(0).sum())
+    w_pos, w_neg = float(weights[target.eq(1)].sum()), float(weights[target.eq(0)].sum())
+    if not raw_pos or not raw_neg or not w_pos or not w_neg:
+        raise ValueError("각 CV training fold에는 양 class의 raw·weighted mass가 모두 필요합니다.")
+    return {
+        "raw_pos": raw_pos, "raw_neg": raw_neg, "W_pos": w_pos, "W_neg": w_neg,
+        "raw_neg_pos_ratio": raw_neg / raw_pos, "weighted_neg_pos_ratio": w_neg / w_pos,
+    }
+
+
+def weighted_lr_class_weight(mass: dict[str, float]) -> dict[int, float]:
+    """weighted mass 기준 balanced class_weight를 반환한다."""
+    total = mass["W_pos"] + mass["W_neg"]
+    return {0: total / (2 * mass["W_neg"]), 1: total / (2 * mass["W_pos"])}
+
+
+def run_weighted_class_locked_oof(
+    bundle: DatasetBundle,
+    *,
+    model_name: str,
+    locked_params: dict,
+    feature_config: str | Path | dict,
+    model_config: str | Path | dict,
+    sample_weight_train: pd.Series,
+) -> tuple[LockedModelResult, pd.DataFrame]:
+    """fold training mass만 사용해 C-revised LR/XGB를 fit하고 비가중 OOF를 만든다."""
+    config = load_model_config(model_config)
+    X = bundle.X.reset_index(drop=True)
+    y = bundle.y.reset_index(drop=True)
+    groups = bundle.groups.reset_index(drop=True)
+    weights = pd.Series(sample_weight_train).reset_index(drop=True)
+    if len(weights) != len(X):
+        raise ValueError("sample_weight_train 길이는 Train 행 수와 같아야 합니다.")
+    splitter = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+    probability = pd.Series(index=X.index, dtype="float64")
+    folds = pd.Series(index=X.index, dtype="int16")
+    audits = []
+    for fold, (fit_idx, valid_idx) in enumerate(splitter.split(X, y, groups)):
+        mass = compute_weighted_class_mass(y.iloc[fit_idx], weights.iloc[fit_idx])
+        params = dict(locked_params)
+        audit = {"fold": fold, **mass}
+        if model_name == "logistic_regression":
+            params["class_weight"] = weighted_lr_class_weight(mass)
+            audit.update({"class_weight_0": params["class_weight"][0], "class_weight_1": params["class_weight"][1]})
+        elif model_name == "xgboost":
+            params["scale_pos_weight"] = mass["weighted_neg_pos_ratio"]
+            audit["scale_pos_weight"] = params["scale_pos_weight"]
+        else:
+            raise ValueError("C-revised는 Logistic Regression 또는 XGBoost만 지원합니다.")
+        fitted = train_model(
+            X.iloc[fit_idx],
+            y.iloc[fit_idx],
+            groups.iloc[fit_idx],
+            model_name=model_name,
+            feature_config=feature_config,
+            model_config=config,
+            params=params,
+            sample_weight_train=weights.iloc[fit_idx],
+        )
+        probability.iloc[valid_idx] = fitted.predict_proba(X.iloc[valid_idx])[:, 1]
+        folds.iloc[valid_idx] = fold
+        audits.append(audit)
+    if probability.isna().any() or folds.isna().any():
+        raise RuntimeError("모든 Train 행에 하나의 OOF prediction과 fold가 할당되어야 합니다.")
+    oof = pd.DataFrame(
+        {
+            "row_index": X.index,
+            "fold": folds.astype("int16"),
+            "SAMPID": groups.astype("string"),
+            "y_true": y.astype("int8"),
+            "y_probability": probability,
+            "y_predicted": (probability >= 0.5).astype("int8"),
+        }
+    )
+    fold_f1 = tuple(
+        f1_score(part["y_true"], part["y_predicted"], zero_division=0)
+        for _, part in oof.groupby("fold", sort=True)
+    )
+    result = LockedModelResult(
+        "C revised weighted class",
+        model_name,
+        X.shape[1],
+        locked_params,
+        fold_f1,
+        calculate_binary_metrics(oof["y_true"], oof["y_probability"]),
+        oof,
+    )
+    return result, pd.DataFrame(audits)

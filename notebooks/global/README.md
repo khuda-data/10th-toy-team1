@@ -18,6 +18,7 @@ Global 모델은 [14번 단계별 실행 흐름](../../plan/details/14-Global-�
 - `04_model_comparison.ipynb`는 사람이 직접 실행하는 최초 Global Test 평가용이다. 네 고정 후보의 Test 지표·SAMPID bootstrap·paired bootstrap·최종 25개 Feature PI를 만들며, 실행 뒤에는 Feature·파라미터·threshold를 바꾸지 않는다.
 - `05_1B_n_prior_periods_audit.ipynb`와 `05_1C_sample_weight_audit.ipynb`는 반복관측 sensitivity B/C의 Train 데이터 구조를 각각 점검한다. 모델 학습·CV·Test 접근은 하지 않는다.
 - `05_2B_n_prior_periods_locked_model.ipynb`와 `05_2C_sample_weight_locked_model.ipynb`는 Stage 3.5의 동결 파라미터로 각각 Train OOF를 만들고 A 결과와 비교한다. 새 hyperparameter tuning·Feature Selection·Test 접근은 하지 않는다.
+- `05_2C_sample_weight_weighted_class_locked_model.ipynb`는 C-old를 보존한 별도 C-revised 분석이다. 같은 SAMPID-level `sample_weight`를 fit에 전달하고, 각 CV training fold의 weighted class mass로 LR `class_weight`와 XGBoost `scale_pos_weight`를 동적으로 계산한다. validation/OOF 지표는 비가중이며, Test·새 tuning·Feature Selection은 사용하지 않는다.
 - 이후 Notebook도 `code/` 공용 함수를 import하며, Test를 Feature·모델 선택에 사용하지 않는다.
 
 ---

@@ -18,6 +18,8 @@ Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사�
 
 `locked_sensitivity.py`는 Stage 3.5 `final_refined_params.json`의 LR/XGBoost parameter를 변경 없이 읽어 반복관측 sensitivity의 Train OOF를 만든다. 새 tuning과 Test 접근은 하지 않으며, C 방식의 `sample_weight`는 각 CV fold의 fit에만 전달하고 OOF 평가는 비가중으로 계산한다.
 
+`run_weighted_class_locked_oof()`는 C-old를 바꾸지 않는 C-revised 전용 opt-in helper다. 매 CV fold의 training rows만 사용해 `W_pos`·`W_neg`를 계산하고, LR에는 weighted-mass `class_weight` dictionary를, XGBoost에는 weighted-mass `scale_pos_weight`를 적용한다. validation 행의 target·weight·분포는 이 계산에 포함하지 않는다.
+
 ---
 ## 🖊 작성 출처
 
