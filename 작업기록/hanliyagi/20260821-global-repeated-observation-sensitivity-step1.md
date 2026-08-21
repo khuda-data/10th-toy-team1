@@ -15,6 +15,7 @@
 - `code/pipeline/audit.py` 추가: 저장된 Global Dataset을 기존 split으로 Train만 선택하고, Stage 3 `selected_features.csv`를 읽고, Person-Period의 기존 `n_prior_periods`를 행 키로 연결하며, Train 기준 sample weight를 계산하는 공통 함수 제공.
 - GitHub 최신 `main`(`b55c33f`)을 fast-forward로 동기화했다. 이에 따라 기존 Global Stage 0~4 Notebook과 공식 Stage 3 `selected_features.csv`가 로컬에 반영됐다.
 - 최신 main의 `code.pipeline.saved_results.load_saved_global_train()`을 audit 보조 함수가 재사용하도록 연결했다. Test DatasetBundle은 만들지 않는다.
+- Notebook 생성 직후 코드 셀의 줄바꿈이 문자 `\\n`으로 저장된 문제를 수정했다. 두 Notebook의 모든 코드 셀을 Python AST로 문법 검사했으며, 이 검사는 셀을 실행하지 않는다.
 
 ## 검증 (내가 직접 확인한 것)
 
