@@ -16,6 +16,7 @@
 - GitHub 최신 `main`(`b55c33f`)을 fast-forward로 동기화했다. 이에 따라 기존 Global Stage 0~4 Notebook과 공식 Stage 3 `selected_features.csv`가 로컬에 반영됐다.
 - 최신 main의 `code.pipeline.saved_results.load_saved_global_train()`을 audit 보조 함수가 재사용하도록 연결했다. Test DatasetBundle은 만들지 않는다.
 - Notebook 생성 직후 코드 셀의 줄바꿈이 문자 `\\n`으로 저장된 문제를 수정했다. 두 Notebook의 모든 코드 셀을 Python AST로 문법 검사했으며, 이 검사는 셀을 실행하지 않는다.
+- 수정 커밋 푸시 시 팀 훅이 업데이트 알림을 요구해 `업데이트.md`에 오류 수정 안내를 추가했다.
 
 ## 검증 (내가 직접 확인한 것)
 
