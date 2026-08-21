@@ -29,6 +29,7 @@
 - Step 3 요청에 따라 B/C strategy-specific retuning Notebook을 각각 만들었다. B는 확정 25개 + 기존 Person-Period `n_prior_periods`의 26개 Feature와 무가중 fit을 사용한다. C는 25개 Feature를 유지하며 Train SAMPID 기준 `1/n_i` sample weight를 fit에만 전달한다. 두 Notebook 모두 A 및 Step 2 locked artifact를 읽기만 하며 Test를 열지 않는다.
 - `code/model/strategy_tuning.py`를 추가해 B LR 28개, C LR 14개, B/C XGB Phase A(81)→B(27)→C(9) 제한 Grid와 최종 비가중 OOF·전용 artifact 저장을 준비했다. B는 raw class ratio, C는 weighted class mass ratio를 fold fit 내부에서만 사용한다.
 - `train.py`의 opt-in `weighted_class_balanced` LR sentinel과 `xgboost.py`의 opt-in weighted ratio sentinel을 추가했다. C GridSearch의 clone된 estimator마다 fit fold의 y/sample weight로 class correction을 계산하고, validation fold 정보는 쓰지 않는다. 기존 Stage 1~4 default 경로는 기존 parameter와 동작을 유지한다.
+- Step 3 B Notebook의 Train loader가 `DatasetBundle`을 DataFrame용 `attach_person_period_column()`에 직접 전달하던 오류를 수정했다. 기존 Step 2 B와 동일하게 `base.to_frame()`에 `n_prior_periods`를 행 키로 연결한 뒤, 원래 y·SAMPID·metadata·sample weight를 유지하는 26 Feature `DatasetBundle`을 다시 만든다.
 
 ## 검증 (내가 직접 확인한 것)
 
