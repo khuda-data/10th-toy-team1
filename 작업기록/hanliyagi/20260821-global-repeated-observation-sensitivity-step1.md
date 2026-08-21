@@ -26,15 +26,20 @@
 - C-revised 전용 저장 경로와 summary·fold F1·weight audit·OOF·confusion matrix 파일 생성을 Notebook에 준비했다. 실제 Notebook, 실제 Global Train CV, OOF 생성, Test 접근은 실행하지 않았다.
 - C-revised 비교 셀에서 A `final_tuning_summary.csv`에 Stage 3와 Stage 3.5가 함께 있어 모델명이 중복되는 경우를 처리하도록 수정했다. A 비교 행은 명시적으로 `stage_3_5`만 선택하며, 중복이 남으면 오류를 내도록 했다.
 - C-old OOF artifact의 prediction 열이 `y_pred`인 것을 schema만 확인해, 비교 셀의 표준화 함수가 `y_pred`·`y_pred_at_0_5` 모두를 `y_predicted`로 맞추도록 보완했다. 지표·성능값은 계산하거나 확인하지 않았다.
+- Step 3 요청에 따라 B/C strategy-specific retuning Notebook을 각각 만들었다. B는 확정 25개 + 기존 Person-Period `n_prior_periods`의 26개 Feature와 무가중 fit을 사용한다. C는 25개 Feature를 유지하며 Train SAMPID 기준 `1/n_i` sample weight를 fit에만 전달한다. 두 Notebook 모두 A 및 Step 2 locked artifact를 읽기만 하며 Test를 열지 않는다.
+- `code/model/strategy_tuning.py`를 추가해 B LR 28개, C LR 14개, B/C XGB Phase A(81)→B(27)→C(9) 제한 Grid와 최종 비가중 OOF·전용 artifact 저장을 준비했다. B는 raw class ratio, C는 weighted class mass ratio를 fold fit 내부에서만 사용한다.
+- `train.py`의 opt-in `weighted_class_balanced` LR sentinel과 `xgboost.py`의 opt-in weighted ratio sentinel을 추가했다. C GridSearch의 clone된 estimator마다 fit fold의 y/sample weight로 class correction을 계산하고, validation fold 정보는 쓰지 않는다. 기존 Stage 1~4 default 경로는 기존 parameter와 동작을 유지한다.
 
 ## 검증 (내가 직접 확인한 것)
 
 - 두 `.ipynb` 파일 JSON 형식 검증 통과.
 - `code/pipeline/audit.py` Python 문법 컴파일 및 import 수준 검증 통과.
 - C-revised 공용 helper 문법 컴파일·import와 합성 `y`/`sample_weight`의 weighted class mass 함수 단위 검증만 수행했다.
+- Step 3 공용 함수·두 Notebook의 Python 문법과 Grid 조합 수(B LR 28, C LR 14, XGB 81/27/9)를 확인했다. 합성 데이터만으로 C LR clone/fit routing과 weighted XGB ratio 함수를 점검했다.
 - Notebook 실행, 실제 데이터 읽기, assertion 실행, 모델 fit/CV, Test 예측·metric 계산은 하지 않았다.
 
 ## 남은 것 / 막힌 것
 
 - 사람이 각 Audit Notebook을 실행해 실제 분포와 assertion 결과를 확인하고 판단해야 한다.
 - 사람이 C-revised Notebook을 실행해 C-old와의 비교표·fold별 class-weight audit을 확인하고 결과를 판단해야 한다.
+- 사람이 Step 3 B/C Notebook을 실행해 제한 GridSearch·전용 artifact·비교표·그래프를 확인하고 결과를 판단해야 한다.

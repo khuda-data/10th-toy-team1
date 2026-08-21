@@ -20,6 +20,8 @@ Stage 3.5의 `final_tuning.py`는 기본 탐색 범위를 바꾸지 않고 사�
 
 `run_weighted_class_locked_oof()`는 C-old를 바꾸지 않는 C-revised 전용 opt-in helper다. 매 CV fold의 training rows만 사용해 `W_pos`·`W_neg`를 계산하고, LR에는 weighted-mass `class_weight` dictionary를, XGBoost에는 weighted-mass `scale_pos_weight`를 적용한다. validation 행의 target·weight·분포는 이 계산에 포함하지 않는다.
 
+`strategy_tuning.py`는 Step 3 sensitivity B/C 전용 제한 GridSearch를 제공한다. B는 26개 Feature에서 Stage 3.5 범위의 LR 28개와 XGBoost A→B→C Grid를 사용한다. C는 25개 Feature에서 LR `class_weight`를 탐색하지 않고, 각 fit fold의 `sample_weight` mass로 동적 class correction을 계산한다. 이 opt-in 경로는 공식 Stage 1~4 기본 탐색을 바꾸지 않으며 Test를 받지 않는다.
+
 ---
 ## 🖊 작성 출처
 
