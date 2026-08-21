@@ -16,6 +16,7 @@
 
 - Notebook Python 문법, 공용 helper import를 확인했다.
 - 합성 OOF에서 subgroup metric과 짧은 paired bootstrap만 검증했다.
+- paired bootstrap은 반복마다 수천 개 DataFrame을 만들던 구현을 SAMPID별 TP·FP·FN 사전 집계 후 NumPy 합산 방식으로 변경했다. 같은 SAMPID 복원추출·반복 수·seed·F1·percentile CI 정의를 유지한다. 합성 OOF에서 이전 행 재구성 정의와 bootstrap mean·CI가 일치함을 확인했다.
 
 ## 남은 것
 

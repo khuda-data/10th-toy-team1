@@ -43,18 +43,36 @@ def paired_sampid_bootstrap_f1(
     merged = left.merge(right, on=keys, suffixes=("_left", "_right"), validate="one_to_one")
     if not merged["y_true_left"].equals(merged["y_true_right"]):
         raise ValueError("paired bootstrap OOF의 y_true가 strategy 간 일치해야 합니다.")
-    persons = merged["SAMPID"].drop_duplicates().to_numpy()
+    person_code, persons = pd.factorize(merged["SAMPID"], sort=False)
+    n_persons = len(persons)
+
+    def person_confusion(prediction_column: str) -> np.ndarray:
+        """각 SAMPID의 TP·FP·FN을 한 번만 집계한다."""
+        truth = merged["y_true_left"].to_numpy(dtype="int8")
+        prediction = merged[prediction_column].to_numpy(dtype="int8")
+        return np.column_stack([
+            np.bincount(person_code, weights=((truth == 1) & (prediction == 1)), minlength=n_persons),
+            np.bincount(person_code, weights=((truth == 0) & (prediction == 1)), minlength=n_persons),
+            np.bincount(person_code, weights=((truth == 1) & (prediction == 0)), minlength=n_persons),
+        ])
+
+    left_counts = person_confusion("y_predicted_left")
+    right_counts = person_confusion("y_predicted_right")
+
+    def f1_from_counts(counts: np.ndarray) -> float:
+        true_positive, false_positive, false_negative = counts
+        denominator = 2 * true_positive + false_positive + false_negative
+        return 0.0 if denominator == 0 else float(2 * true_positive / denominator)
+
     rng = np.random.default_rng(random_state)
     deltas = []
     for _ in range(repeats):
-        sampled = rng.choice(persons, size=len(persons), replace=True)
-        parts = [merged.loc[merged["SAMPID"].eq(person)] for person in sampled]
-        sample = pd.concat(parts, ignore_index=True)
+        sampled_index = rng.choice(n_persons, size=n_persons, replace=True)
         deltas.append(
-            f1_score(sample["y_true_left"], sample["y_predicted_left"], zero_division=0)
-            - f1_score(sample["y_true_right"], sample["y_predicted_right"], zero_division=0)
+            f1_from_counts(left_counts[sampled_index].sum(axis=0))
+            - f1_from_counts(right_counts[sampled_index].sum(axis=0))
         )
-    point = f1_score(merged["y_true_left"], merged["y_predicted_left"], zero_division=0) - f1_score(merged["y_true_right"], merged["y_predicted_right"], zero_division=0)
+    point = f1_from_counts(left_counts.sum(axis=0)) - f1_from_counts(right_counts.sum(axis=0))
     return pd.DataFrame([{"point_delta_f1": point, "bootstrap_mean_delta": float(np.mean(deltas)), "ci_lower": float(np.quantile(deltas, .025)), "ci_upper": float(np.quantile(deltas, .975)), "bootstrap_repeats": repeats}])
 
 
