@@ -31,6 +31,7 @@
 - `train.py`의 opt-in `weighted_class_balanced` LR sentinel과 `xgboost.py`의 opt-in weighted ratio sentinel을 추가했다. C GridSearch의 clone된 estimator마다 fit fold의 y/sample weight로 class correction을 계산하고, validation fold 정보는 쓰지 않는다. 기존 Stage 1~4 default 경로는 기존 parameter와 동작을 유지한다.
 - Step 3 B Notebook의 Train loader가 `DatasetBundle`을 DataFrame용 `attach_person_period_column()`에 직접 전달하던 오류를 수정했다. 기존 Step 2 B와 동일하게 `base.to_frame()`에 `n_prior_periods`를 행 키로 연결한 뒤, 원래 y·SAMPID·metadata·sample weight를 유지하는 26 Feature `DatasetBundle`을 다시 만든다.
 - Jupyter의 loky process worker가 저장소 패키지명 `code`를 표준 라이브러리 `code`로 잘못 해석해 발생한 `BrokenProcessPool`을 피하도록, Step 3 B/C Notebook의 GridSearch 호출에 `parallel_backend_name="threading"`을 명시했다. `n_jobs=-1`과 XGBoost 내부 `n_jobs=1` 원칙은 유지한다.
+- Step 3 마지막 그래프에서 B/C locked OOF는 이미 메모리에 있는 DataFrame인데 이를 parquet 경로로 다시 읽으려 해 발생한 오류를 수정했다. 그래프 helper가 값이 `Path`/문자열일 때만 `read_parquet()`를 호출하고, DataFrame은 그대로 사용한다.
 
 ## 검증 (내가 직접 확인한 것)
 
