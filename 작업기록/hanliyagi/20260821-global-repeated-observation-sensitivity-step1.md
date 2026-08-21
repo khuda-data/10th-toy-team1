@@ -17,6 +17,7 @@
 - 최신 main의 `code.pipeline.saved_results.load_saved_global_train()`을 audit 보조 함수가 재사용하도록 연결했다. Test DatasetBundle은 만들지 않는다.
 - Notebook 생성 직후 코드 셀의 줄바꿈이 문자 `\\n`으로 저장된 문제를 수정했다. 두 Notebook의 모든 코드 셀을 Python AST로 문법 검사했으며, 이 검사는 셀을 실행하지 않는다.
 - 수정 커밋 푸시 시 팀 훅이 업데이트 알림을 요구해 `업데이트.md`에 오류 수정 안내를 추가했다.
+- 두 Audit Notebook의 모든 Markdown·코드 셀을 정상 줄바꿈으로 다시 정리하고, 입력·Feature 계약·분포·사람별 점검·assertion 순서의 Markdown 구분선을 추가해 가독성을 높였다. Notebook 실행 없이 JSON·Python AST 검증만 수행했다.
 
 ## 검증 (내가 직접 확인한 것)
 
