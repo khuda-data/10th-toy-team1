@@ -45,7 +45,13 @@ class RareCategoryGrouper(BaseEstimator, TransformerMixin):
         frame = pd.DataFrame(X).copy()
         for column, rare in self.rare_values_.items():
             values = frame[column].astype("string")
-            frame.loc[values.isin(rare), column] = self.other_label
+            rare_mask = values.isin(rare)
+            if rare_mask.any():
+                # pandas의 Categorical 열은 미리 정의하지 않은 "Other" 값을 바로 대입하면
+                # LossySetitemError를 낸다. 희소 범주를 Other로 묶는 기존 규칙은 그대로 두고,
+                # 대입 전 object로 바꿔 pandas 버전과 무관하게 안전하게 처리한다.
+                frame[column] = frame[column].astype(object)
+                frame.loc[rare_mask, column] = self.other_label
         return frame
 
 

@@ -19,6 +19,7 @@
 - 수정 커밋 푸시 시 팀 훅이 업데이트 알림을 요구해 `업데이트.md`에 오류 수정 안내를 추가했다.
 - 두 Audit Notebook의 모든 Markdown·코드 셀을 정상 줄바꿈으로 다시 정리하고, 입력·Feature 계약·분포·사람별 점검·assertion 순서의 Markdown 구분선을 추가해 가독성을 높였다. Notebook 실행 없이 JSON·Python AST 검증만 수행했다.
 - Step 2 요청에 따라 `05_2B_n_prior_periods_locked_model.ipynb`, `05_2C_sample_weight_locked_model.ipynb`와 `code/model/locked_sensitivity.py`를 추가했다. Stage 3.5 `final_refined_params.json`을 동결 parameter source of truth로 읽고, 새 tuning 없이 Train Group OOF·비가중 지표·전용 결과 저장·A 비교표/그래프를 준비한다.
+- 05_2B 실행 중 최신 pandas의 Categorical 열에 희소 범주 `Other`를 대입할 때 `LossySetitemError`가 발생한 것을 확인했다. `RareCategoryGrouper.transform()`이 대입 전 해당 열을 object로 바꾸도록 수정했으며, 합성 범주형 DataFrame으로만 함수 단위 검증했다. 실제 Global 데이터·모델 fit·CV는 실행하지 않았다.
 
 ## 검증 (내가 직접 확인한 것)
 
