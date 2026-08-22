@@ -1,6 +1,6 @@
 {
   "logistic_regression": {
-    "C": 0.1,
+    "C": 1,
     "class_weight": "balanced",
     "penalty": "l1"
   },
@@ -11,6 +11,6 @@
     "min_child_weight": 1,
     "n_estimators": 200,
     "scale_pos_weight": "train_negative_positive_ratio",
-    "subsample": 1.0
+    "subsample": 0.8
   }
 }
