@@ -95,3 +95,7 @@
 ### 시각화 차트 추가
 - **프롬프트**: 노트북으로 내가 바로 볼 수 있게, PPT에 넣을 수 있게 Apple 디자인 적용해줘.
 - **한 일**: sandbox/cepil/figures/에 Apple 디자인 토큰을 반영한 성능/Feature Importance/Confusion Matrix 차트 6종 생성 및 저장. sandbox/cepil/local_group_viz.ipynb 및 파이썬 스크립트 작성.
+
+### 결과 분석 대본 추가
+- **프롬프트**: 발표에 쓸 수 있게 차트 결과 분석해주고 sandbox에 푸시해줘.
+- **한 일**: sandbox/cepil/presentation_analysis_script.md 작성 및 저장.
