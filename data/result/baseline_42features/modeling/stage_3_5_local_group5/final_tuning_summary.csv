@@ -1,0 +1,5 @@
+model,stage,feature_count,cv_f1_mean,cv_f1_std,oof_precision,oof_recall,oof_f1,oof_roc_auc,best_params
+logistic_regression,stage_3,25,0.555441439208518,0.0385483371660948,0.5266666666666666,0.5851851851851851,0.5543859649122806,0.6382880658436214,"{'C': 1, 'class_weight': 'balanced', 'penalty': 'l1'}"
+xgboost,stage_3,25,0.5352074448848643,0.0474338104116029,0.4938271604938271,0.5925925925925926,0.5387205387205387,0.6347489711934157,"{'colsample_bytree': 1.0, 'learning_rate': 0.03, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 200, 'scale_pos_weight': 'train_negative_positive_ratio', 'subsample': 0.8}"
+logistic_regression,stage_3_5,25,0.5737843278871917,0.02224141860836643,0.5316455696202531,0.6222222222222222,0.5733788395904437,0.6382716049382717,"{'C': 0.3, 'class_weight': 'balanced', 'penalty': 'l2'}"
+xgboost,stage_3_5,25,0.5570766072888313,0.05420996801121639,0.509090909090909,0.6222222222222222,0.56,0.6367572016460905,"{'subsample': 1.0, 'colsample_bytree': 0.8, 'scale_pos_weight': 'train_negative_positive_ratio', 'learning_rate': 0.05, 'max_depth': 2, 'min_child_weight': 3, 'n_estimators': 500, 'gamma': 0.1, 'reg_alpha': 0, 'reg_lambda': 1}"

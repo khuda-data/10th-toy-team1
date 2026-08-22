@@ -1,0 +1,4 @@
+comparison,point_estimate_delta_f1,bootstrap_mean_delta,ci95_lower,ci95_upper,n_repeats,bootstrap_unit,threshold
+lr_stage_2 - lr_stage_1,0.0,0.0,0.0,0.0,1000,SAMPID,0.5
+xgb_stage_2 - xgb_stage_1,0.01920485175202158,0.019251507648372898,-0.028891304347826052,0.0737642220524573,1000,SAMPID,0.5
+xgb_stage_2 - lr_stage_2,0.06071428571428572,0.061483022871135835,-0.011665935385100492,0.13846428417985426,1000,SAMPID,0.5
