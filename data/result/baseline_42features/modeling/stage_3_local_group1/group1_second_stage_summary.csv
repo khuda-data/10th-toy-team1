@@ -1,0 +1,3 @@
+model,n_features,best_cv_f1,cv_f1_mean,cv_f1_std,oof_precision,oof_recall,oof_f1,oof_roc_auc,best_params
+logistic_regression,25,0.5123094393353502,0.5123094393353502,0.03534606337658888,0.4608695652173913,0.5808219178082191,0.5139393939393939,0.6330838323353294,"{'C': 0.1, 'class_weight': 'balanced', 'penalty': 'l1'}"
+xgboost,25,0.5064098471965912,0.5064098471965912,0.026698527403287264,0.44583333333333336,0.5863013698630137,0.506508875739645,0.6106513001394471,"{'colsample_bytree': 1.0, 'learning_rate': 0.03, 'max_depth': 3, 'min_child_weight': 1, 'n_estimators': 200, 'scale_pos_weight': 'train_negative_positive_ratio', 'subsample': 1.0}"
