@@ -1,0 +1,46 @@
+{
+  "logistic_regression": {
+    "C": 0.15,
+    "class_weight": "balanced",
+    "penalty": "l1"
+  },
+  "xgboost_stage_a": {
+    "subsample": 1.0,
+    "colsample_bytree": 0.8,
+    "scale_pos_weight": "train_negative_positive_ratio",
+    "gamma": 0,
+    "reg_alpha": 0,
+    "reg_lambda": 1,
+    "n_jobs": 1,
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "min_child_weight": 7,
+    "n_estimators": 500
+  },
+  "xgboost_stage_b": {
+    "scale_pos_weight": "train_negative_positive_ratio",
+    "reg_alpha": 0,
+    "reg_lambda": 1,
+    "n_jobs": 1,
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "min_child_weight": 7,
+    "n_estimators": 500,
+    "colsample_bytree": 1.0,
+    "gamma": 0.3,
+    "subsample": 1.0
+  },
+  "xgboost": {
+    "scale_pos_weight": "train_negative_positive_ratio",
+    "n_jobs": 1,
+    "learning_rate": 0.02,
+    "max_depth": 4,
+    "min_child_weight": 7,
+    "n_estimators": 500,
+    "colsample_bytree": 1.0,
+    "gamma": 0.3,
+    "subsample": 1.0,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1
+  }
+}

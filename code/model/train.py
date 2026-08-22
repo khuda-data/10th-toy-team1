@@ -14,6 +14,33 @@ from sklearn.tree import DecisionTreeClassifier
 from code.preprocess.preprocess import build_preprocessor
 
 
+WEIGHTED_CLASS_BALANCED = "weighted_class_balanced"
+
+
+class FoldAwareLogisticRegression(LogisticRegression):
+    """Fit fold의 sample_weight mass로 class_weight를 계산하는 LR이다.
+
+    일반 ``LogisticRegression``의 공개 parameter 계약을 그대로 상속한다. sentinel은
+    C-revised tuning에서만 opt-in으로 사용하며, fit 직전 숫자 dictionary로 치환된다.
+    """
+
+    def fit(self, X, y, sample_weight=None):
+        if self.get_params().get("class_weight") == WEIGHTED_CLASS_BALANCED:
+            if sample_weight is None:
+                raise ValueError("weighted_class_balanced에는 sample_weight가 필요합니다.")
+            target = pd.Series(y).reset_index(drop=True)
+            weights = pd.Series(sample_weight).reset_index(drop=True).astype("float64")
+            if len(target) != len(weights) or weights.isna().any() or weights.le(0).any():
+                raise ValueError("weighted_class_balanced에는 y와 같은 길이의 양수 sample_weight가 필요합니다.")
+            positive = float(weights[target.eq(1)].sum())
+            negative = float(weights[target.eq(0)].sum())
+            if positive <= 0 or negative <= 0:
+                raise ValueError("weighted_class_balanced에는 두 class의 양수 weighted mass가 필요합니다.")
+            total = positive + negative
+            self.set_params(class_weight={0: total / (2 * negative), 1: total / (2 * positive)})
+        return super().fit(X, y, sample_weight=sample_weight)
+
+
 def load_model_config(model_config: str | Path | dict) -> dict:
     if isinstance(model_config, dict):
         return model_config
@@ -29,6 +56,8 @@ def build_estimator(model_name: str, model_config: str | Path | dict, params: di
     kwargs = dict(config["models"][model_name]["fixed"])
     kwargs.update(params or {})
     if model_name == "logistic_regression":
+        if kwargs.get("class_weight") == WEIGHTED_CLASS_BALANCED:
+            return FoldAwareLogisticRegression(**kwargs)
         return LogisticRegression(**kwargs)
     if model_name == "decision_tree":
         return DecisionTreeClassifier(**kwargs)

@@ -15,13 +15,36 @@
 - `code/pipeline/audit.py` 추가: 저장된 Global Dataset을 기존 split으로 Train만 선택하고, Stage 3 `selected_features.csv`를 읽고, Person-Period의 기존 `n_prior_periods`를 행 키로 연결하며, Train 기준 sample weight를 계산하는 공통 함수 제공.
 - GitHub 최신 `main`(`b55c33f`)을 fast-forward로 동기화했다. 이에 따라 기존 Global Stage 0~4 Notebook과 공식 Stage 3 `selected_features.csv`가 로컬에 반영됐다.
 - 최신 main의 `code.pipeline.saved_results.load_saved_global_train()`을 audit 보조 함수가 재사용하도록 연결했다. Test DatasetBundle은 만들지 않는다.
+- Notebook 생성 직후 코드 셀의 줄바꿈이 문자 `\\n`으로 저장된 문제를 수정했다. 두 Notebook의 모든 코드 셀을 Python AST로 문법 검사했으며, 이 검사는 셀을 실행하지 않는다.
+- 수정 커밋 푸시 시 팀 훅이 업데이트 알림을 요구해 `업데이트.md`에 오류 수정 안내를 추가했다.
+- 두 Audit Notebook의 모든 Markdown·코드 셀을 정상 줄바꿈으로 다시 정리하고, 입력·Feature 계약·분포·사람별 점검·assertion 순서의 Markdown 구분선을 추가해 가독성을 높였다. Notebook 실행 없이 JSON·Python AST 검증만 수행했다.
+- Step 2 요청에 따라 `05_2B_n_prior_periods_locked_model.ipynb`, `05_2C_sample_weight_locked_model.ipynb`와 `code/model/locked_sensitivity.py`를 추가했다. Stage 3.5 `final_refined_params.json`을 동결 parameter source of truth로 읽고, 새 tuning 없이 Train Group OOF·비가중 지표·전용 결과 저장·A 비교표/그래프를 준비한다.
+- 05_2B 실행 중 최신 pandas의 Categorical 열에 희소 범주 `Other`를 대입할 때 `LossySetitemError`가 발생한 것을 확인했다. `RareCategoryGrouper.transform()`이 대입 전 해당 열을 object로 바꾸도록 수정했으며, 합성 범주형 DataFrame으로만 함수 단위 검증했다. 실제 Global 데이터·모델 fit·CV는 실행하지 않았다.
+- ROC 비교 그래프 셀에서 설치된 scikit-learn이 직접 `color=` 인자를 지원하지 않아 발생한 `TypeError`를 확인했다. 두 Step 2 Notebook에서 지원되는 `curve_kwargs={"color": ...}` 방식으로 변경하고 저장된 실행 output·traceback을 제거했다. Notebook은 다시 실행하지 않았다.
+- Step 2C Revised 요청에 따라 `notebooks/global/05_2C_sample_weight_weighted_class_locked_model.ipynb`를 새로 만들었다. 기존 C-old Notebook과 결과 경로는 수정하지 않는다. 이 Notebook은 Global Train의 같은 SAMPID-level `1 / n_i` sample weight를 사용하되, 각 `StratifiedGroupKFold` training fold 안에서만 `W_pos`·`W_neg`를 계산한다.
+- `code/model/locked_sensitivity.py`에 C-revised 전용 opt-in helper를 추가했다. LR은 `W_total/(2*W_neg)`, `W_total/(2*W_pos)` dictionary로 기존 `class_weight="balanced"`를 대체하고, XGBoost는 `W_neg/W_pos`으로 기존 raw-row `scale_pos_weight`를 대체한다. 두 모델 모두 training fold fit에만 SAMPID sample weight를 전달하며, validation/OOF metric은 비가중으로 남긴다.
+- C-revised 전용 저장 경로와 summary·fold F1·weight audit·OOF·confusion matrix 파일 생성을 Notebook에 준비했다. 실제 Notebook, 실제 Global Train CV, OOF 생성, Test 접근은 실행하지 않았다.
+- C-revised 비교 셀에서 A `final_tuning_summary.csv`에 Stage 3와 Stage 3.5가 함께 있어 모델명이 중복되는 경우를 처리하도록 수정했다. A 비교 행은 명시적으로 `stage_3_5`만 선택하며, 중복이 남으면 오류를 내도록 했다.
+- C-old OOF artifact의 prediction 열이 `y_pred`인 것을 schema만 확인해, 비교 셀의 표준화 함수가 `y_pred`·`y_pred_at_0_5` 모두를 `y_predicted`로 맞추도록 보완했다. 지표·성능값은 계산하거나 확인하지 않았다.
+- Step 3 요청에 따라 B/C strategy-specific retuning Notebook을 각각 만들었다. B는 확정 25개 + 기존 Person-Period `n_prior_periods`의 26개 Feature와 무가중 fit을 사용한다. C는 25개 Feature를 유지하며 Train SAMPID 기준 `1/n_i` sample weight를 fit에만 전달한다. 두 Notebook 모두 A 및 Step 2 locked artifact를 읽기만 하며 Test를 열지 않는다.
+- `code/model/strategy_tuning.py`를 추가해 B LR 28개, C LR 14개, B/C XGB Phase A(81)→B(27)→C(9) 제한 Grid와 최종 비가중 OOF·전용 artifact 저장을 준비했다. B는 raw class ratio, C는 weighted class mass ratio를 fold fit 내부에서만 사용한다.
+- `train.py`의 opt-in `weighted_class_balanced` LR sentinel과 `xgboost.py`의 opt-in weighted ratio sentinel을 추가했다. C GridSearch의 clone된 estimator마다 fit fold의 y/sample weight로 class correction을 계산하고, validation fold 정보는 쓰지 않는다. 기존 Stage 1~4 default 경로는 기존 parameter와 동작을 유지한다.
+- Step 3 B Notebook의 Train loader가 `DatasetBundle`을 DataFrame용 `attach_person_period_column()`에 직접 전달하던 오류를 수정했다. 기존 Step 2 B와 동일하게 `base.to_frame()`에 `n_prior_periods`를 행 키로 연결한 뒤, 원래 y·SAMPID·metadata·sample weight를 유지하는 26 Feature `DatasetBundle`을 다시 만든다.
+- Jupyter의 loky process worker가 저장소 패키지명 `code`를 표준 라이브러리 `code`로 잘못 해석해 발생한 `BrokenProcessPool`을 피하도록, Step 3 B/C Notebook의 GridSearch 호출에 `parallel_backend_name="threading"`을 명시했다. `n_jobs=-1`과 XGBoost 내부 `n_jobs=1` 원칙은 유지한다.
+- Step 3 마지막 그래프에서 B/C locked OOF는 이미 메모리에 있는 DataFrame인데 이를 parquet 경로로 다시 읽으려 해 발생한 오류를 수정했다. 그래프 helper가 값이 `Path`/문자열일 때만 `read_parquet()`를 호출하고, DataFrame은 그대로 사용한다.
+- Step 4 요청에 따라 B/C diagnostics Notebook을 분리 생성했다. B는 `n_prior_periods` 분포·subgroup OOF·validation-fold 원 Feature PI·SAMPID paired bootstrap을, C는 SAMPID row-count subgroup·weighted correction audit·paired bootstrap을 준비한다. 두 Notebook은 A/locked/tuned Train artifact만 읽고 Test는 열지 않는다.
+- `code/evaluation/sensitivity_diagnostics.py`를 추가해 OOF 열 표준화, subgroup metric, SAMPID paired bootstrap, Train-fold fit/validation-fold permutation importance를 공용화했다. 합성 OOF로 bootstrap/subgroup 함수만 검증했고 실제 Global PI·bootstrap·Notebook은 실행하지 않았다.
 
 ## 검증 (내가 직접 확인한 것)
 
 - 두 `.ipynb` 파일 JSON 형식 검증 통과.
 - `code/pipeline/audit.py` Python 문법 컴파일 및 import 수준 검증 통과.
+- C-revised 공용 helper 문법 컴파일·import와 합성 `y`/`sample_weight`의 weighted class mass 함수 단위 검증만 수행했다.
+- Step 3 공용 함수·두 Notebook의 Python 문법과 Grid 조합 수(B LR 28, C LR 14, XGB 81/27/9)를 확인했다. 합성 데이터만으로 C LR clone/fit routing과 weighted XGB ratio 함수를 점검했다.
 - Notebook 실행, 실제 데이터 읽기, assertion 실행, 모델 fit/CV, Test 예측·metric 계산은 하지 않았다.
 
 ## 남은 것 / 막힌 것
 
 - 사람이 각 Audit Notebook을 실행해 실제 분포와 assertion 결과를 확인하고 판단해야 한다.
+- 사람이 C-revised Notebook을 실행해 C-old와의 비교표·fold별 class-weight audit을 확인하고 결과를 판단해야 한다.
+- 사람이 Step 3 B/C Notebook을 실행해 제한 GridSearch·전용 artifact·비교표·그래프를 확인하고 결과를 판단해야 한다.
