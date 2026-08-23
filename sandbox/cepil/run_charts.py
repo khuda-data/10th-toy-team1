@@ -19,7 +19,7 @@ OUT_DIR.mkdir(exist_ok=True)
 GROUPS = {
     'group1': '경영·사무·금융',
     'group2': '연구·공학·산업기술',
-    'group3': '교육·법률·사회·공공',
+    'group3_2': '교육·법률·사회·공공',
     'group4': '보건·의료',
     'group5': '예술·디자인·방송·스포츠',
     'group6': '서비스·영업·판매·운송',
@@ -392,9 +392,9 @@ ax3.legend(fontsize=8, framealpha=0.8)
 ax3.spines['left'].set_visible(False); ax3.spines['bottom'].set_color(C['hairline'])
 
 # (1,0~2) Feature Importance 하이라이트 3개 (G3 vs G4 vs G5)
-highlight = ['group3', 'group4', 'group5']
+highlight = ['group3_2', 'group4', 'group5']
 hi_titles = {
-    'group3': 'G3  교육·법률·사회·공공  [낮음]',
+    'group3_2': 'G3  교육·법률·사회·공공  [낮음]',
     'group4': 'G4  보건·의료  [양호]',
     'group5': 'G5  예술·디자인·방송·스포츠  [양호]',
 }
