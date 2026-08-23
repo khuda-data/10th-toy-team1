@@ -33,11 +33,11 @@ MODELING_DIR = ROOT / "data/result/baseline_42features/modeling"
 OUT_DIR = Path(__file__).parent / "figures"
 OUT_DIR.mkdir(exist_ok=True)
 
-# ── 직군 정보 (cepil 제공 2026-08-23) ──────────────────────────────────────
+# ── 직군 정보 (cepil 제공 2026-08-23, group3→group3_2 수정 2026-08-23) ────
 GROUPS = {
     "group1": "경영·사무·금융",
     "group2": "연구·공학·산업기술",
-    "group3": "교육·법률·사회·공공",
+    "group3_2": "교육·법률·사회·공공",
     "group4": "보건·의료",
     "group5": "예술·디자인·방송·스포츠",
     "group6": "서비스·영업·판매·운송",
