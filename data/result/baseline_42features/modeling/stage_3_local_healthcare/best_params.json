@@ -1,0 +1,16 @@
+{
+  "logistic_regression": {
+    "C": 1,
+    "class_weight": "balanced",
+    "penalty": "l1"
+  },
+  "xgboost": {
+    "colsample_bytree": 1.0,
+    "learning_rate": 0.03,
+    "max_depth": 3,
+    "min_child_weight": 5,
+    "n_estimators": 200,
+    "scale_pos_weight": "train_negative_positive_ratio",
+    "subsample": 0.8
+  }
+}
