@@ -1,0 +1,2 @@
+metric,estimate,bootstrap_mean,ci95_lower,ci95_upper,n_valid_repeats,n_repeats,bootstrap_unit,threshold
+f1,0.6068965517241379,0.6057909947374547,0.5142022940563086,0.6906607067287347,1000,1000,SAMPID,0.5
